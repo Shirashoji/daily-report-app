@@ -1,0 +1,34 @@
+import { NextResponse } from 'next/server';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+
+async function generateReportFromCommits(commits: string): Promise<string> {
+  const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+
+  const prompt = `以下のコミット履歴から、日報の「作業内容」をMarkdown形式で生成してください。
+
+# コミット履歴
+${commits}
+
+# 作業内容
+`;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  const text = response.text();
+  return text;
+}
+
+export async function POST(request: Request) {
+  const { commits } = await request.json();
+
+  try {
+    const report = await generateReportFromCommits(commits);
+    return NextResponse.json({ report });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Failed to generate report' }, { status: 500 });
+  }
+}
+

@@ -1,5 +1,13 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Environment Variables
+
+To run this project, you will need to add the following environment variables to your `.env.local` file:
+
+- `GEMINI_API_KEY`: You can get your API key from [Google AI Studio](https://aistudio.google.com/).
+- `ESA_API_KEY`: Your esa.io API access token.
+- `ESA_TEAM_NAME`: Your esa.io team name.
+
 ## Getting Started
 
 First, run the development server:
