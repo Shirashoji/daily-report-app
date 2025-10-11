@@ -1,44 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Daily Report Generator
 
-## Environment Variables
+This is a Next.js application that helps you generate a daily work report from your Git commit history using Google's Gemini model.
 
-To run this project, you will need to add the following environment variables to your `.env.local` file:
+## Features
 
-- `GEMINI_API_KEY`: You can get your API key from [Google AI Studio](https://aistudio.google.com/).
-- `ESA_API_KEY`: Your esa.io API access token.
-- `ESA_TEAM_NAME`: Your esa.io team name.
+- **AI-Powered Report Generation**: Automatically generates a draft of your daily report based on the day's Git commits.
+- **Customizable Date**: You can select any date to generate a report for, not just today.
+- **Selectable AI Models**: Choose from different Gemini models (`2.5 Pro` / `2.5 Flash` / `2.5 Flash Lite`) to tailor the generation to your needs.
+- **AI-Powered Advice**: Get suggestions from the AI on how to improve your report, based on your past reports and today's commits.
+- **esa.io Integration**: 
+    - View a list of your past daily reports from esa.io directly within the app.
+    - You can specify the esa.io username to fetch reports from. The username is saved in your browser's local storage for convenience.
+- **Copy to Clipboard**: Easily copy the generated report to your clipboard.
 
-## Getting Started
+## Setup
 
-First, run the development server:
+1.  **Clone the repository**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3.  **Create Environment File**:
+    Create a `.env.local` file in the root of the `daily-report-app` directory and add the following environment variables:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+    ```
+    GEMINI_API_KEY="YOUR_GOOGLE_AI_API_KEY"
+    ESA_API_KEY="YOUR_ESA_IO_API_KEY"
+    ESA_TEAM_NAME="YOUR_ESA_IO_TEAM_NAME"
+    ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+    - `GEMINI_API_KEY`: You can get your API key from [Google AI Studio](https://aistudio.google.com/).
+    - `ESA_API_KEY`: Your esa.io API access token.
+    - `ESA_TEAM_NAME`: Your esa.io team name.
 
-## Learn More
+## How to Use
 
-To learn more about Next.js, take a look at the following resources:
+1.  **Start the development server**:
+    ```bash
+    npm run dev
+    ```
+    The application will be available at `http://localhost:80`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2.  **Select the Date**: Choose the date for which you want to generate the report. The commit history for that day will be automatically fetched.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3.  **Choose a Gemini Model**: Select the AI model you want to use for generation.
 
-## Deploy on Vercel
+4.  **Generate Report**: Click the "日報を生成" (Generate Report) button. The AI will generate a report in the text area on the right.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+5.  **View Past Reports**: 
+    - Click the "esa記事" (esa Articles) tab.
+    - Enter an esa.io username (defaults to `shirashoji`) and the app will automatically fetch and display a list of past reports from that user.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+6.  **Get Advice**: Click the "アドバイスを生成" (Generate Advice) button to get AI-powered suggestions for your report.
+
+7.  **Copy Report**: Once you are satisfied with the report, click the "クリップボードにコピー" (Copy to Clipboard) button.

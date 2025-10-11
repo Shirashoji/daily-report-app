@@ -1,0 +1,122 @@
+
+> daily-report-app@0.1.0 dev
+> next dev -p 80 --turbopack
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/takuma/package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /Users/takuma/develop/vdslab/chatgpt-graphvis/DailyReport/daily-report-app/package-lock.json
+
+   ▲ Next.js 15.5.4 (Turbopack)
+   - Local:        http://localhost:80
+   - Network:      http://192.168.10.115:80
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 877ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1503ms
+ GET / 200 in 1797ms
+ ✓ Compiled /api/get-commits in 173ms
+{
+  date: '2025-10-11',
+  after: '2025-10-10T15:00:00.000Z',
+  before: '2025-10-11T14:59:59.000Z'
+}
+ GET /api/get-commits?date=2025-10-11 200 in 495ms
+{
+  date: '2025-10-10',
+  after: '2025-10-09T15:00:00.000Z',
+  before: '2025-10-10T14:59:59.000Z'
+}
+ GET /api/get-commits?date=2025-10-10 200 in 316ms
+{
+  date: '2025-10-10',
+  after: '2025-10-09T15:00:00.000Z',
+  before: '2025-10-10T14:59:59.000Z'
+}
+ GET /api/get-commits?date=2025-10-10 200 in 319ms
+ ✓ Compiled /api/get-past-reports in 100ms
+ GET /api/get-past-reports?user=shirashoji 200 in 769ms
+ ✓ Compiled in 39ms
+ GET / 200 in 192ms
+ ✓ Compiled /favicon.ico in 87ms
+{
+  date: '2025-10-11',
+  after: '2025-10-10T15:00:00.000Z',
+  before: '2025-10-11T14:59:59.000Z'
+}
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 334ms
+ GET /api/get-commits?date=2025-10-11 200 in 331ms
+{
+  date: '2025-10-10',
+  after: '2025-10-09T15:00:00.000Z',
+  before: '2025-10-10T14:59:59.000Z'
+}
+ GET /api/get-commits?date=2025-10-10 200 in 337ms
+ ✓ Compiled /api/generate-report in 84ms
+ GET /api/get-past-reports?user=shirashoji 200 in 694ms
+ POST /api/generate-report 200 in 12588ms
+ GET /api/get-past-reports?user=shirashoji 200 in 710ms
+ GET /api/get-past-reports?user=shirashoji 200 in 626ms
+ GET /api/get-past-reports?user=shirashoji 200 in 673ms
+ GET /api/get-past-reports?user=shirashoji 200 in 622ms
+ GET /api/get-past-reports?user=shirashoji 200 in 649ms
+ GET /api/get-past-reports?user=shirashoji 200 in 568ms
+ GET /api/get-past-reports?user=shirashoji 200 in 636ms
+ GET /api/get-past-reports?user=shirashoji 200 in 560ms
+ GET /api/get-past-reports?user=shirashoji 200 in 575ms
+{
+  date: '2025-10-09',
+  after: '2025-10-08T15:00:00.000Z',
+  before: '2025-10-09T14:59:59.000Z'
+}
+ GET /api/get-commits?date=2025-10-09 200 in 330ms
+{
+  date: '2025-10-11',
+  after: '2025-10-10T15:00:00.000Z',
+  before: '2025-10-11T14:59:59.000Z'
+}
+ GET /api/get-commits?date=2025-10-11 200 in 332ms
+ GET /api/get-past-reports?user=shirashoji 200 in 593ms
+ ✓ Compiled /api/generate-advice in 103ms
+ POST /api/generate-advice 200 in 20500ms
+ GET / 200 in 119ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 274ms
+{
+  date: '2025-10-11',
+  after: '2025-10-10T15:00:00.000Z',
+  before: '2025-10-11T14:59:59.000Z'
+}
+ GET /api/get-commits?date=2025-10-11 200 in 326ms
+ GET /api/get-past-reports?user=shirashoji 200 in 607ms
+ POST /api/generate-advice 200 in 10575ms
+ GET / 200 in 104ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 272ms
+{
+  date: '2025-10-11',
+  after: '2025-10-10T15:00:00.000Z',
+  before: '2025-10-11T14:59:59.000Z'
+}
+ GET /api/get-commits?date=2025-10-11 200 in 311ms
+ ✓ Compiled in 51ms
+ GET / 200 in 302ms
+ GET / 200 in 94ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 299ms
+{
+  date: '2025-10-11',
+  after: '2025-10-10T15:00:00.000Z',
+  before: '2025-10-11T14:59:59.000Z'
+}
+ GET /api/get-commits?date=2025-10-11 200 in 341ms
+ GET / 200 in 85ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 270ms
+{
+  date: '2025-10-11',
+  after: '2025-10-10T15:00:00.000Z',
+  before: '2025-10-11T14:59:59.000Z'
+}
+ GET /api/get-commits?date=2025-10-11 200 in 317ms
+[?25h

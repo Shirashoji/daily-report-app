@@ -3,8 +3,8 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
-async function generateReportFromCommits(commits: string): Promise<string> {
-  const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+async function generateReportFromCommits(commits: string, modelName: string = 'gemini-2.5-flash'): Promise<string> {
+  const model = genAI.getGenerativeModel({ model: modelName });
 
   const prompt = `以下のコミット履歴から、日報の「作業内容」をMarkdown形式で生成してください。
 
@@ -21,10 +21,10 @@ ${commits}
 }
 
 export async function POST(request: Request) {
-  const { commits } = await request.json();
+  const { commits, model } = await request.json();
 
   try {
-    const report = await generateReportFromCommits(commits);
+    const report = await generateReportFromCommits(commits, model);
     return NextResponse.json({ report });
   } catch (error) {
     console.error(error);

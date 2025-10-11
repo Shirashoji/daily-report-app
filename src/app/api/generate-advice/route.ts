@@ -6,9 +6,10 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 async function generateAdvice(
   template: string,
   pastReports: string[],
-  commits: string
+  commits: string,
+  modelName: string = 'gemini-2.5-flash'
 ): Promise<string> {
-  const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+  const model = genAI.getGenerativeModel({ model: modelName });
 
   const prompt = `あなたは優秀なアシスタントです。
 以下の情報をもとに、今日の日報を作成するためのアドバイスをしてください。
@@ -35,10 +36,10 @@ ${commits}
 }
 
 export async function POST(request: Request) {
-  const { template, pastReports, commits } = await request.json();
+  const { template, pastReports, commits, model } = await request.json();
 
   try {
-    const advice = await generateAdvice(template, pastReports, commits);
+    const advice = await generateAdvice(template, pastReports, commits, model);
     return NextResponse.json({ advice });
   } catch (error) {
     console.error(error);
