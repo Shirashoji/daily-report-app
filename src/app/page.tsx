@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 
 interface EsaArticle {
   name: string;
@@ -18,15 +19,17 @@ const formatDate = (date: Date) => {
 
 export default function Home() {
   const [commitHistory, setCommitHistory] = useState('コミット履歴を読み込み中...');
-  const [dailyReport, setDailyReport] = useState('');
+  const [generatedText, setGeneratedText] = useState('');
+  const [reportType, setReportType] = useState('daily'); // 'daily' or 'meeting'
   const [advice, setAdvice] = useState('');
   const [isGeneratingAdvice, setIsGeneratingAdvice] = useState(false);
-  const [model, setModel] = useState('gemini-2.5-flash');
+  const [model, setModel] = useState('gemini-1.5-flash');
   const [activeTab, setActiveTab] = useState('commits');
   const [esaArticles, setEsaArticles] = useState<EsaArticle[]>([]);
   const [isLoadingEsa, setIsLoadingEsa] = useState(false);
   const [esaUser, setEsaUser] = useState('shirashoji');
   const [targetDate, setTargetDate] = useState(new Date());
+  const [localRepoPath, setLocalRepoPath] = useState('');
 
   // localStorageから永続化されたデータを読み込む
   useEffect(() => {
@@ -37,6 +40,10 @@ export default function Home() {
     const savedModel = localStorage.getItem('geminiModel');
     if (savedModel) {
       setModel(savedModel);
+    }
+    const savedLocalRepoPath = localStorage.getItem('localRepoPath');
+    if (savedLocalRepoPath) {
+      setLocalRepoPath(savedLocalRepoPath);
     }
   }, []);
 
@@ -52,18 +59,31 @@ export default function Home() {
     localStorage.setItem('geminiModel', modelName);
   };
 
-  // targetDateが変更されたらコミット履歴を再取得
+  const handleSetLocalRepoPath = (path: string) => {
+    setLocalRepoPath(path);
+    localStorage.setItem('localRepoPath', path);
+  };
+
+  // targetDateやコミット取得設定が変更されたらコミット履歴を再取得
   useEffect(() => {
     const fetchCommits = async () => {
       setCommitHistory(`コミット履歴を読み込み中...`);
       try {
         const dateString = formatDate(targetDate);
-        const response = await fetch(`/api/get-commits?date=${dateString}`);
+        let url = `/api/get-commits?date=${dateString}`;
+
+        if (!localRepoPath) {
+          setCommitHistory('ローカルリポジトリのパスを設定してください。');
+          return;
+        }
+        url += `&source=local&path=${encodeURIComponent(localRepoPath)}`;
+
+        const response = await fetch(url);
         const data = await response.json();
-        if (data.commits) {
+        if (response.ok) {
           setCommitHistory(data.commits || 'この日のコミットはありませんでした。');
         } else {
-          setCommitHistory('コミット履歴の取得に失敗しました。');
+          setCommitHistory(`コミット履歴の取得に失敗しました。\n${data.error || ''}`);
         }
       } catch (error) {
         console.error("Error fetching commits:", error);
@@ -71,9 +91,9 @@ export default function Home() {
       }
     };
     fetchCommits();
-  }, [targetDate]);
+  }, [targetDate, localRepoPath]);
 
-  const fetchEsaArticles = async () => {
+  const fetchEsaArticles = useCallback(async () => {
     setIsLoadingEsa(true);
     setEsaArticles([]);
     try {
@@ -89,37 +109,40 @@ export default function Home() {
     } finally {
       setIsLoadingEsa(false);
     }
-  };
+  }, [esaUser]);
   
   // esa記事タブが選択されたら記事を自動取得
   useEffect(() => {
     if (activeTab === 'esa') {
       fetchEsaArticles();
     }
-  }, [activeTab, esaUser]);
+  }, [activeTab, fetchEsaArticles]);
 
   const generateReport = async () => {
-    setDailyReport("日報生成中...");
+    const generatingText = reportType === 'daily' ? "日報生成中..." : "MTG資料生成中...";
+    setGeneratedText(generatingText);
     try {
       const response = await fetch('/api/generate-report', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ commits: commitHistory, model }),
+        body: JSON.stringify({ commits: commitHistory, model, reportType }),
       });
       const data = await response.json();
-      setDailyReport(data.report);
+      setGeneratedText(data.report);
     } catch (error) {
       console.error("Error generating report:", error);
-      setDailyReport("日報の生成に失敗しました。");
+      const errorText = reportType === 'daily' ? "日報の生成に失敗しました。" : "MTG資料の生成に失敗しました。";
+      setGeneratedText(errorText);
     }
   };
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(dailyReport);
-      alert('日報をクリップボードにコピーしました。');
+      await navigator.clipboard.writeText(generatedText);
+      const successText = reportType === 'daily' ? '日報をクリップボードにコピーしました。' : 'MTG資料をクリップボードにコピーしました。';
+      alert(successText);
     } catch (error) {
       console.error("Failed to copy to clipboard:", error);
       alert('クリップボードへのコピーに失敗しました。');
@@ -159,7 +182,29 @@ export default function Home() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">日報作成ツール</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">{reportType === 'daily' ? '日報作成ツール' : 'MTG資料作成ツール'}</h1>
+        <Link href="/settings" className="text-blue-600 hover:underline">
+          設定
+        </Link>
+      </div>
+
+      <div className="mb-4">
+        <div className="flex space-x-4 border-b pb-4">
+          <button
+            onClick={() => setReportType('daily')}
+            className={`px-4 py-2 rounded-md ${reportType === 'daily' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          >
+            日報
+          </button>
+          <button
+            onClick={() => setReportType('meeting')}
+            className={`px-4 py-2 rounded-md ${reportType === 'meeting' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          >
+            MTG資料
+          </button>
+        </div>
+      </div>
 
       <div className="mb-4 grid grid-cols-2 gap-4">
         <div>
@@ -207,7 +252,23 @@ export default function Home() {
           </div>
           <div className="mt-4">
             {activeTab === 'commits' && (
-              <pre className="bg-gray-100 p-2 rounded-md overflow-auto h-96">{commitHistory}</pre>
+              <div>
+                <div className="space-y-4 mb-4 p-4 border rounded-md">
+                  <h3 className="text-lg font-medium">コミット取得設定</h3>
+                  <div>
+                    <label htmlFor="local-repo-path" className="block text-sm font-medium text-gray-700">ローカルリポジトリのパス:</label>
+                    <input
+                      type="text"
+                      id="local-repo-path"
+                      value={localRepoPath}
+                      onChange={(e) => handleSetLocalRepoPath(e.target.value)}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                      placeholder="例: /path/to/your/repo"
+                    />
+                  </div>
+                </div>
+                <pre className="bg-gray-100 p-2 rounded-md overflow-auto h-80">{commitHistory}</pre>
+              </div>
             )}
             {activeTab === 'esa' && (
               <div>
@@ -240,11 +301,11 @@ export default function Home() {
           </div>
         </div>
         <div>
-          <h2 className="text-xl font-semibold mb-2">生成された日報</h2>
+          <h2 className="text-xl font-semibold mb-2">生成された{reportType === 'daily' ? '日報' : 'MTG資料'}</h2>
           <textarea
             className="w-full h-96 p-2 border rounded-md"
-            value={dailyReport}
-            onChange={(e) => setDailyReport(e.target.value)}
+            value={generatedText}
+            onChange={(e) => setGeneratedText(e.target.value)}
           />
         </div>
       </div>
@@ -254,31 +315,32 @@ export default function Home() {
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           onClick={generateReport}
         >
-          日報を生成
+          {reportType === 'daily' ? '日報を生成' : 'MTG資料を生成'}
         </button>
         <button
           className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-2"
           onClick={copyToClipboard}
-          disabled={!dailyReport}
+          disabled={!generatedText}
         >
           クリップボードにコピー
         </button>
       </div>
 
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-2">日報作成アドバイス</h2>
-        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md">
-          <button
-            className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded mb-4"
-            onClick={getAdvice}
-            disabled={isGeneratingAdvice}
-          >
-            {isGeneratingAdvice ? 'アドバイス生成中...' : 'アドバイスを生成'}
-          </button>
-          {advice && <pre className="whitespace-pre-wrap">{advice}</pre>}
+      {reportType === 'daily' && (
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold mb-2">日報作成アドバイス</h2>
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md">
+            <button
+              className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded mb-4"
+              onClick={getAdvice}
+              disabled={isGeneratingAdvice}
+            >
+              {isGeneratingAdvice ? 'アドバイス生成中...' : 'アドバイスを生成'}
+            </button>
+            {advice && <pre className="whitespace-pre-wrap">{advice}</pre>}
+          </div>
         </div>
-      </div>
-
+      )}
     </div>
   );
 }

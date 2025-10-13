@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
 
+interface EsaPost {
+  name: string;
+  url: string;
+  body_md: string;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const user = searchParams.get('user');
@@ -32,10 +38,11 @@ export async function GET(request: Request) {
     }
 
     const data = await response.json();
-    const reports = data.posts.map((post: any) => ({ name: post.name, url: post.url, body_md: post.body_md }));
+    const reports = data.posts.map((post: EsaPost) => ({ name: post.name, url: post.url, body_md: post.body_md }));
     return NextResponse.json({ reports });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: 'Failed to fetch from esa.io' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: 'Failed to fetch from esa.io', details: message }, { status: 500 });
   }
 }
