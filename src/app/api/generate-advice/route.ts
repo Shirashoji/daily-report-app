@@ -9,7 +9,7 @@ async function generateAdvice(
   commits: string,
   modelName: string = 'gemini-2.5-flash'
 ): Promise<string> {
-  const model = genAI.getGenerativeModel({ model: modelName });
+  const model = genAI.getGenerativeModel({ model: `models/${modelName}` });
 
   const prompt = `あなたは優秀なアシスタントです。
 以下の情報をもとに、今日の日報を作成するためのアドバイスをしてください。
@@ -43,6 +43,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ advice });
   } catch (error) {
     console.error(error);
+    if (error instanceof Error && error.message.includes('is not found for API version')) {
+      return NextResponse.json({ error: `選択されたモデル'${model}'が見つかりません。別のモデルを試してください。` }, { status: 404 });
+    }
     return NextResponse.json({ error: 'Failed to generate advice' }, { status: 500 });
   }
 }

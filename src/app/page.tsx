@@ -17,19 +17,141 @@ const formatDate = (date: Date) => {
   return `${year}-${month}-${day}`;
 };
 
+// Helper to get all dates in the week of a given date (Monday to Sunday)
+const getDatesInWeek = (date: Date) => {
+  const startOfWeek = new Date(date);
+  startOfWeek.setDate(date.getDate() - (date.getDay() === 0 ? 6 : date.getDay() - 1)); // Monday
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const dates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate() + i);
+    dates.push(formatDate(d));
+  }
+  return dates;
+};
+
+// Helper to group work times by day
+const groupWorkTimesByDay = (workTimes: { start: Date; end: Date | null; memo: string }[]) => {
+  const grouped: { [key: string]: { start: Date; end: Date | null; memo: string }[] } = {};
+  workTimes.forEach(wt => {
+    const date = formatDate(wt.start);
+    if (!grouped[date]) {
+      grouped[date] = [];
+    }
+    grouped[date].push(wt);
+  });
+  return grouped;
+};
+
 export default function Home() {
   const [commitHistory, setCommitHistory] = useState('コミット履歴を読み込み中...');
   const [generatedText, setGeneratedText] = useState('');
   const [reportType, setReportType] = useState('daily'); // 'daily' or 'meeting'
   const [advice, setAdvice] = useState('');
   const [isGeneratingAdvice, setIsGeneratingAdvice] = useState(false);
-  const [model, setModel] = useState('gemini-1.5-flash');
+  const [model, setModel] = useState('gemini-2.5-flash');
   const [activeTab, setActiveTab] = useState('commits');
   const [esaArticles, setEsaArticles] = useState<EsaArticle[]>([]);
   const [isLoadingEsa, setIsLoadingEsa] = useState(false);
   const [esaUser, setEsaUser] = useState('shirashoji');
   const [targetDate, setTargetDate] = useState(new Date());
   const [localRepoPath, setLocalRepoPath] = useState('');
+  const [workTimes, setWorkTimes] = useState<{ start: Date; end: Date | null; memo: string }[]>([]);
+  const [isWorking, setIsWorking] = useState(false);
+  const [currentMemo, setCurrentMemo] = useState('');
+  const [editingWorkTimeIndex, setEditingWorkTimeIndex] = useState<number | null>(null);
+  const [lastMeetingUrl, setLastMeetingUrl] = useState('');
+  const [meetingCandidates, setMeetingCandidates] = useState<{ name: string, url: string }[]>([]);
+
+  // 作業開始処理
+  const handleStartWork = () => {
+    setWorkTimes([...workTimes, { start: new Date(), end: null, memo: '' }]);
+    setIsWorking(true);
+  };
+
+  // 作業終了処理
+  const handleEndWork = () => {
+    const newWorkTimes = [...workTimes];
+    const lastWorkTime = newWorkTimes[newWorkTimes.length - 1];
+    if (lastWorkTime && lastWorkTime.end === null) {
+      lastWorkTime.end = new Date();
+      lastWorkTime.memo = currentMemo;
+
+      // 作業時間が0分より大きい場合のみ記録
+      if (calculateWorkDuration(lastWorkTime.start, lastWorkTime.end) > 0) {
+        setWorkTimes(newWorkTimes);
+      } else {
+        // 0分以下の場合は最後の作業記録を削除
+        newWorkTimes.pop();
+        setWorkTimes(newWorkTimes);
+      }
+      setIsWorking(false);
+      setCurrentMemo(''); // メモをリセット
+    }
+  };
+
+  // 作業時間をフォーマットするヘルパー関数
+  const formatWorkTime = (time: Date) => {
+    return time.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  // 作業時間（分）を計算するヘルパー関数
+  const calculateWorkDuration = (start: Date, end: Date) => {
+    const diff = end.getTime() - start.getTime();
+    return Math.round(diff / (1000 * 60));
+  };
+
+  // 1日の合計作業時間（分）を計算するヘルパー関数
+  const calculateTotalWorkDuration = (workTimes: { start: Date; end: Date | null }[]) => {
+    return workTimes
+      .filter(wt => wt.end) // 終了時刻があるもののみ
+      .reduce((total, wt) => {
+        // wt.endがnullでないことを確認済み
+        return total + calculateWorkDuration(wt.start, wt.end!);
+      }, 0);
+  };
+
+  const handleEditWorkTime = (index: number) => {
+    setEditingWorkTimeIndex(index);
+  };
+
+  const handleSaveWorkTime = (index: number, newStart: string, newEnd: string) => {
+    const newWorkTimes = [...workTimes];
+    const targetWorkTime = newWorkTimes[index];
+
+    const startDate = new Date(targetWorkTime.start);
+    const [startHours, startMinutes] = newStart.split(':').map(Number);
+    startDate.setHours(startHours, startMinutes);
+
+    let endDate: Date | null = null;
+    if (targetWorkTime.end) {
+      endDate = new Date(targetWorkTime.end);
+      const [endHours, endMinutes] = newEnd.split(':').map(Number);
+      endDate.setHours(endHours, endMinutes);
+    }
+
+    // 日付をまたぐ場合の考慮（終了が開始より早い場合は翌日にする）
+    if (endDate && endDate < startDate) {
+      endDate.setDate(endDate.getDate() + 1);
+    }
+
+    newWorkTimes[index] = { start: startDate, end: endDate, memo: targetWorkTime.memo };
+    setWorkTimes(newWorkTimes);
+    setEditingWorkTimeIndex(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingWorkTimeIndex(null);
+  };
+
+  const handleDeleteWorkTime = (index: number) => {
+    if (window.confirm('この作業記録を削除しますか？')) {
+      const newWorkTimes = workTimes.filter((_, i) => i !== index);
+      setWorkTimes(newWorkTimes);
+    }
+  };
 
   // localStorageから永続化されたデータを読み込む
   useEffect(() => {
@@ -45,7 +167,28 @@ export default function Home() {
     if (savedLocalRepoPath) {
       setLocalRepoPath(savedLocalRepoPath);
     }
+
+    const savedWorkTimes = localStorage.getItem('workTimes');
+    if (savedWorkTimes) {
+      const parsedWorkTimes = JSON.parse(savedWorkTimes).map((wt: { start: string; end: string | null; memo: string }) => ({
+        start: new Date(wt.start),
+        end: wt.end ? new Date(wt.end) : null,
+        memo: wt.memo || '',
+      }));
+      setWorkTimes(parsedWorkTimes);
+
+      // 作業中かどうかを判定
+      const lastWorkTime = parsedWorkTimes[parsedWorkTimes.length - 1];
+      if (lastWorkTime && lastWorkTime.end === null) {
+        setIsWorking(true);
+      }
+    }
   }, []);
+
+  // workTimesが変更されたらlocalStorageに保存
+  useEffect(() => {
+    localStorage.setItem('workTimes', JSON.stringify(workTimes));
+  }, [workTimes]);
 
   // ユーザー名をlocalStorageに保存するカスタムセッター
   const handleSetEsaUser = (user: string) => {
@@ -70,7 +213,7 @@ export default function Home() {
       setCommitHistory(`コミット履歴を読み込み中...`);
       try {
         const dateString = formatDate(targetDate);
-        let url = `/api/get-commits?date=${dateString}`;
+        let url = `/api/get-commits?date=${dateString}&reportType=${reportType}`;
 
         if (!localRepoPath) {
           setCommitHistory('ローカルリポジトリのパスを設定してください。');
@@ -91,7 +234,7 @@ export default function Home() {
       }
     };
     fetchCommits();
-  }, [targetDate, localRepoPath]);
+  }, [targetDate, localRepoPath, reportType]);
 
   const fetchEsaArticles = useCallback(async () => {
     setIsLoadingEsa(true);
@@ -118,16 +261,96 @@ export default function Home() {
     }
   }, [activeTab, fetchEsaArticles]);
 
+  // MTG資料モードになったら、先週の議事録を検索
+  useEffect(() => {
+    if (reportType === 'meeting') {
+      const fetchLastMeeting = async () => {
+        const team = localStorage.getItem('esaTeam');
+        const apiKey = localStorage.getItem('esaApiKey');
+        if (!team || !apiKey) {
+          return; // 必要な情報がなければ何もしない
+        }
+
+        const lastWeek = new Date(targetDate);
+        lastWeek.setDate(targetDate.getDate() - 7);
+        const dateString = formatDate(lastWeek);
+
+        try {
+          const res = await fetch('/api/get-past-reports', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              team, 
+              apiKey, 
+              date: dateString, 
+              keyword: `${dateString}MTG`,
+              user: esaUser 
+            }),
+          });
+          const data = await res.json();
+          if (res.ok && data.reports.length > 0) {
+            setMeetingCandidates(data.reports);
+            // 最初の候補を自動的に選択
+            setLastMeetingUrl(data.reports[0].url);
+          } else {
+            setMeetingCandidates([]);
+            setLastMeetingUrl('');
+          }
+        } catch (error) {
+          console.error('Failed to fetch last meeting reports', error);
+          setMeetingCandidates([]);
+          setLastMeetingUrl('');
+        }
+      };
+      fetchLastMeeting();
+    }
+  }, [reportType, targetDate, esaUser]);
+
   const generateReport = async () => {
     const generatingText = reportType === 'daily' ? "日報生成中..." : "MTG資料生成中...";
     setGeneratedText(generatingText);
+
+    const savedCustomVars = localStorage.getItem('customVariables');
+    const customVariables = savedCustomVars ? JSON.parse(savedCustomVars) : {};
+
+    let lastMeetingContent = '';
+    if (reportType === 'meeting' && lastMeetingUrl) {
+      try {
+        const team = localStorage.getItem('esaTeam');
+        const apiKey = localStorage.getItem('esaApiKey');
+        const res = await fetch('/api/get-esa-article', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: lastMeetingUrl, team, apiKey }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          lastMeetingContent = data.body_md;
+        } else {
+          throw new Error(data.error || 'Failed to fetch last meeting article');
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        setGeneratedText(`先週の議事録の取得に失敗しました: ${message}`);
+        return;
+      }
+    }
+
     try {
       const response = await fetch('/api/generate-report', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ commits: commitHistory, model, reportType }),
+        body: JSON.stringify({ 
+          commits: commitHistory, 
+          model, 
+          reportType, 
+          workTimes: reportType === 'daily' ? workTimes.filter(wt => formatDate(wt.start) === formatDate(targetDate)) : workTimes.filter(wt => getDatesInWeek(targetDate).includes(formatDate(wt.start))), 
+          targetDate, 
+          customVariables, 
+          lastMeetingContent 
+        }),
       });
       const data = await response.json();
       setGeneratedText(data.report);
@@ -184,9 +407,173 @@ export default function Home() {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">{reportType === 'daily' ? '日報作成ツール' : 'MTG資料作成ツール'}</h1>
-        <Link href="/settings" className="text-blue-600 hover:underline">
-          設定
-        </Link>
+        <div className="flex items-center space-x-4">
+          <Link href="/stats" className="text-blue-600 hover:underline">
+            統計
+          </Link>
+          <Link href="/settings" className="text-blue-600 hover:underline">
+            設定
+          </Link>
+        </div>
+      </div>
+
+      <div className="mb-8 p-4 border rounded-md">
+        <h2 className="text-xl font-semibold mb-4">作業時間記録</h2>
+        <div className="flex items-center space-x-4 mb-4">
+          <button
+            onClick={handleStartWork}
+            disabled={isWorking}
+            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-400"
+          >
+            作業開始
+          </button>
+          <button
+            onClick={handleEndWork}
+            disabled={!isWorking}
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-400"
+          >
+            作業終了
+          </button>
+        </div>
+        {isWorking && (
+          <div className="mb-4">
+            <label htmlFor="current-memo" className="block text-sm font-medium text-gray-700">作業メモ:</label>
+            <textarea
+              id="current-memo"
+              value={currentMemo}
+              onChange={(e) => setCurrentMemo(e.target.value)}
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              rows={3}
+              placeholder="今やっている作業内容をメモ..."
+            />
+          </div>
+        )}
+        <div>
+          {reportType === 'daily' ? (
+            <>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-lg font-medium">記録された作業（{formatDate(targetDate)}）</h3>
+                <span className="text-lg font-medium">
+                  合計: {Math.floor(calculateTotalWorkDuration(workTimes.filter(wt => formatDate(wt.start) === formatDate(targetDate))) / 60)}時間 {calculateTotalWorkDuration(workTimes.filter(wt => formatDate(wt.start) === formatDate(targetDate))) % 60}分
+                </span>
+              </div>
+              <ul className="space-y-2">
+                {workTimes
+                  .map((wt, index) => ({ ...wt, originalIndex: index })) // 元のインデックスを保持
+                  .filter(wt => formatDate(wt.start) === formatDate(targetDate))
+                  .map((wt) => (
+                    <li key={wt.originalIndex} className="p-3 bg-gray-100 rounded-md">
+                      <div className="flex items-center justify-between mb-2">
+                        {editingWorkTimeIndex === wt.originalIndex ? (
+                          <>
+                            <input
+                              type="time"
+                              defaultValue={formatWorkTime(wt.start)}
+                              id={`start-time-${wt.originalIndex}`}
+                              className="border-gray-300 rounded-md"
+                            />
+                            <span className="mx-2">〜</span>
+                            <input
+                              type="time"
+                              defaultValue={wt.end ? formatWorkTime(wt.end) : ''}
+                              id={`end-time-${wt.originalIndex}`}
+                              className="border-gray-300 rounded-md"
+                            />
+                            <div className="ml-auto">
+                              <button onClick={() => handleSaveWorkTime(wt.originalIndex, (document.getElementById(`start-time-${wt.originalIndex}`) as HTMLInputElement).value, (document.getElementById(`end-time-${wt.originalIndex}`) as HTMLInputElement).value)} className="bg-blue-500 text-white px-3 py-1 rounded-md mr-2">保存</button>
+                              <button onClick={handleCancelEdit} className="bg-gray-500 text-white px-3 py-1 rounded-md">キャンセル</button>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <span>
+                              {formatWorkTime(wt.start)} 〜 {wt.end ? formatWorkTime(wt.end) : '作業中...'}
+                              {wt.end && `(${calculateWorkDuration(wt.start, wt.end)}分)`}
+                            </span>
+                            <div>
+                              <button onClick={() => handleEditWorkTime(wt.originalIndex)} className="bg-gray-300 text-black px-3 py-1 rounded-md mr-2">編集</button>
+                              <button onClick={() => handleDeleteWorkTime(wt.originalIndex)} className="bg-red-500 text-white px-3 py-1 rounded-md">削除</button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                      {wt.memo && (
+                        <pre className="whitespace-pre-wrap bg-white p-2 rounded text-sm">{wt.memo}</pre>
+                      )}
+                    </li>
+                  ))}
+              </ul>
+            </>
+          ) : (
+            <>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-lg font-medium">記録された作業（今週分）</h3>
+                <span className="text-lg font-medium">
+                  合計: {Math.floor(calculateTotalWorkDuration(workTimes.filter(wt => getDatesInWeek(targetDate).includes(formatDate(wt.start)))) / 60)}時間 {calculateTotalWorkDuration(workTimes.filter(wt => getDatesInWeek(targetDate).includes(formatDate(wt.start)))) % 60}分
+                </span>
+              </div>
+              <div className="space-y-2">
+                {Object.entries(groupWorkTimesByDay(workTimes.filter(wt => getDatesInWeek(targetDate).includes(formatDate(wt.start)))))
+                  .sort(([dateA], [dateB]) => new Date(dateA).getTime() - new Date(dateB).getTime())
+                  .map(([date, dailyWorkTimes]) => (
+                    <details key={date} className="p-3 bg-gray-100 rounded-md">
+                      <summary className="flex justify-between items-center cursor-pointer">
+                        <h4 className="font-semibold">{date}</h4>
+                        <span>
+                          合計: {Math.floor(calculateTotalWorkDuration(dailyWorkTimes) / 60)}時間 {calculateTotalWorkDuration(dailyWorkTimes) % 60}分
+                        </span>
+                      </summary>
+                      <ul className="mt-2 space-y-1">
+                        {dailyWorkTimes
+                          .map((wt, index) => ({ ...wt, originalIndex: workTimes.indexOf(wt) })) // 元のインデックスを保持
+                          .map((wt) => (
+                            <li key={wt.originalIndex} className="p-2 bg-white rounded-md">
+                              <div className="flex items-center justify-between mb-1">
+                                {editingWorkTimeIndex === wt.originalIndex ? (
+                                  <>
+                                    <input
+                                      type="time"
+                                      defaultValue={formatWorkTime(wt.start)}
+                                      id={`start-time-${wt.originalIndex}`}
+                                      className="border-gray-300 rounded-md"
+                                    />
+                                    <span className="mx-2">〜</span>
+                                    <input
+                                      type="time"
+                                      defaultValue={wt.end ? formatWorkTime(wt.end) : ''}
+                                      id={`end-time-${wt.originalIndex}`}
+                                      className="border-gray-300 rounded-md"
+                                    />
+                                    <div className="ml-auto">
+                                      <button onClick={() => handleSaveWorkTime(wt.originalIndex, (document.getElementById(`start-time-${wt.originalIndex}`) as HTMLInputElement).value, (document.getElementById(`end-time-${wt.originalIndex}`) as HTMLInputElement).value)} className="bg-blue-500 text-white px-3 py-1 rounded-md mr-2">保存</button>
+                                      <button onClick={handleCancelEdit} className="bg-gray-500 text-white px-3 py-1 rounded-md">キャンセル</button>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <span>
+                                      {formatWorkTime(wt.start)} 〜 {wt.end ? formatWorkTime(wt.end) : '作業中...'}
+                                      {wt.end && `(${calculateWorkDuration(wt.start, wt.end)}分)`}
+                                    </span>
+                                    <div>
+                                      <button onClick={() => handleEditWorkTime(wt.originalIndex)} className="bg-gray-300 text-black px-3 py-1 rounded-md mr-2">編集</button>
+                                      <button onClick={() => handleDeleteWorkTime(wt.originalIndex)} className="bg-red-500 text-white px-3 py-1 rounded-md">削除</button>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                              {wt.memo && (
+                                <pre className="whitespace-pre-wrap bg-white p-2 rounded text-sm">{wt.memo}</pre>
+                              )}
+                            </li>
+                          ))}
+                      </ul>
+                    </details>
+                  ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="mb-4">
@@ -205,6 +592,32 @@ export default function Home() {
           </button>
         </div>
       </div>
+
+      {reportType === 'meeting' && (
+        <div className="mb-8 p-4 border rounded-md bg-gray-50">
+          <h2 className="text-xl font-semibold mb-4">MTG資料設定</h2>
+          <div>
+            <label htmlFor="last-meeting-url" className="block text-sm font-medium text-gray-700">先週のMTG議事録:</label>
+            <select
+              id="last-meeting-url"
+              value={lastMeetingUrl}
+              onChange={(e) => setLastMeetingUrl(e.target.value)}
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              disabled={meetingCandidates.length === 0}
+            >
+              {meetingCandidates.length > 0 ? (
+                meetingCandidates.map(candidate => (
+                  <option key={candidate.url} value={candidate.url}>
+                    {candidate.name}
+                  </option>
+                ))
+              ) : (
+                <option value="">先週のMTG資料が見つかりませんでした</option>
+              )}
+            </select>
+          </div>
+        </div>
+      )}
 
       <div className="mb-4 grid grid-cols-2 gap-4">
         <div>
@@ -225,8 +638,8 @@ export default function Home() {
             onChange={(e) => handleSetModel(e.target.value)}
             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
           >
-            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
             <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
             <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
           </select>
         </div>

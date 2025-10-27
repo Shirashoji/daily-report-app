@@ -7,6 +7,7 @@ export default function SettingsPage() {
   const [geminiApiKey, setGeminiApiKey] = useState('');
   const [esaTeam, setEsaTeam] = useState('');
   const [esaApiKey, setEsaApiKey] = useState('');
+  const [customVariables, setCustomVariables] = useState<Record<string, string>>({});
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -18,14 +19,24 @@ export default function SettingsPage() {
 
     const savedEsaKey = localStorage.getItem('esaApiKey');
     if (savedEsaKey) setEsaApiKey(savedEsaKey);
+
+    const savedCustomVars = localStorage.getItem('customVariables');
+    if (savedCustomVars) {
+      setCustomVariables(JSON.parse(savedCustomVars));
+    }
   }, []);
 
-  const handleSaveKeys = () => {
+  const handleSave = () => {
     localStorage.setItem('geminiApiKey', geminiApiKey);
     localStorage.setItem('esaTeam', esaTeam);
     localStorage.setItem('esaApiKey', esaApiKey);
-    setMessage('APIキーを保存しました。');
+    localStorage.setItem('customVariables', JSON.stringify(customVariables));
+    setMessage('設定を保存しました。');
     setTimeout(() => setMessage(''), 3000);
+  };
+
+  const handleCustomVariableChange = (key: string, value: string) => {
+    setCustomVariables(prev => ({ ...prev, [key]: value }));
   };
 
   return (
@@ -80,14 +91,31 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
+
+        <div>
+          <h2 className="text-xl font-semibold mb-2">テンプレート変数</h2>
+          <div className="space-y-4 p-4 border rounded-md">
+            <div>
+              <label htmlFor="var-me" className="block text-sm font-medium text-gray-700">{'%{me}'} (esa.ioのユーザー名など)</label>
+              <input
+                type="text"
+                id="var-me"
+                value={customVariables.me || ''}
+                onChange={(e) => handleCustomVariableChange('me', e.target.value)}
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                placeholder="your-esa-username"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="mt-8 flex justify-end">
         <button
-          onClick={handleSaveKeys}
+          onClick={handleSave}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
-          APIキー等を保存
+          設定を保存
         </button>
       </div>
       {message && <p className="text-green-600 text-right mt-2">{message}</p>}

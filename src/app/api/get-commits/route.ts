@@ -1,33 +1,62 @@
 import { NextResponse } from 'next/server';
 import { exec } from 'child_process';
 
-// 日本時間の指定された日付の範囲を取得する関数
-const getJstDateRange = (dateString?: string | null) => {
+const getJstDateRange = (dateString?: string | null, reportType?: string | null) => {
   const jstOffset = 9 * 60 * 60 * 1000; // 9 hours in milliseconds
-  
-  const targetDate = dateString ? new Date(dateString) : new Date();
-  if (!dateString) {
-    targetDate.setTime(targetDate.getTime() + jstOffset);
+
+  let year, month, date; // month is 0-based
+
+  if (dateString) {
+    const parts = dateString.split('-').map(Number);
+    year = parts[0];
+    month = parts[1] - 1; // JS month is 0-based
+    date = parts[2];
+  } else {
+    // Fallback to "today" in JST
+    const todayJst = new Date(new Date().getTime() + jstOffset);
+    year = todayJst.getUTCFullYear();
+    month = todayJst.getUTCMonth();
+    date = todayJst.getUTCDate();
   }
 
-  const year = targetDate.getUTCFullYear();
-  const month = targetDate.getUTCMonth();
-  const date = targetDate.getUTCDate();
+  const targetDate = new Date(Date.UTC(year, month, date));
 
-  const startOfDayJst = new Date(Date.UTC(year, month, date, 0, 0, 0));
-  const endOfDayJst = new Date(Date.UTC(year, month, date, 23, 59, 59));
+  if (reportType === 'meeting') {
+    // For meetings, get the whole week (Monday to Sunday) JST
+    const dayOfWeek = targetDate.getUTCDay(); // Sunday = 0, Monday = 1, ...
+    const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const monday = new Date(targetDate);
+    monday.setUTCDate(targetDate.getUTCDate() + diffToMonday);
+    
+    const sunday = new Date(monday);
+    sunday.setUTCDate(monday.getUTCDate() + 6);
 
-  const after = new Date(startOfDayJst.getTime() - jstOffset).toISOString();
-  const before = new Date(endOfDayJst.getTime() - jstOffset).toISOString();
+    const startOfDayJst = new Date(Date.UTC(monday.getUTCFullYear(), monday.getUTCMonth(), monday.getUTCDate(), 0, 0, 0));
+    const endOfDayJst = new Date(Date.UTC(sunday.getUTCFullYear(), sunday.getUTCMonth(), sunday.getUTCDate(), 23, 59, 59));
 
-  return { after, before };
+    const after = new Date(startOfDayJst.getTime() - jstOffset).toISOString();
+    const before = new Date(endOfDayJst.getTime() - jstOffset).toISOString();
+
+    return { after, before };
+  } else {
+    // Daily report logic (JST day)
+    const startOfDayJst = new Date(Date.UTC(year, month, date, 0, 0, 0));
+    const endOfDayJst = new Date(Date.UTC(year, month, date, 23, 59, 59));
+
+    const after = new Date(startOfDayJst.getTime() - jstOffset).toISOString();
+    const before = new Date(endOfDayJst.getTime() - jstOffset).toISOString();
+
+    return { after, before };
+  }
 };
+
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const date = searchParams.get('date');
+  const reportType = searchParams.get('reportType');
 
-  const { after, before } = getJstDateRange(date);
+  const { after, before } = getJstDateRange(date, reportType);
 
   const repoPath = searchParams.get('path');
   if (!repoPath) {
