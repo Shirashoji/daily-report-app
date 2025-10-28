@@ -25,6 +25,10 @@ interface GitHubBranch {
   protected: boolean;
 }
 
+interface GitHubRepo {
+  private: boolean;
+}
+
 const getJstDateRange = (dateString?: string | null, reportType?: string | null) => {
   const jstOffset = 9 * 60 * 60 * 1000; // 9 hours in milliseconds
 
@@ -78,7 +82,7 @@ export async function POST(request: Request) {
   console.log('github-commits API: Request received.');
   try {
     const body = await request.json();
-    const { owner, repo, branch, date, reportType, includePrivate } = body;
+    const { owner, repo, branch, date, reportType } = body;
 
     if (!owner || !repo) {
       return NextResponse.json({ error: 'owner and repo are required' }, { status: 400 });

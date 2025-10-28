@@ -71,7 +71,7 @@ export default function Home() {
   const [githubRepo, setGithubRepo] = useState('');
   const [branches, setBranches] = useState<string[]>([]);
   const [selectedBranch, setSelectedBranch] = useState('all');
-  const [includePrivate, setIncludePrivate] = useState(false);
+
 
 
   // 作業開始処理
@@ -232,7 +232,7 @@ export default function Home() {
           const response = await fetch('/api/get-branches', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ owner: githubOwner, repo: githubRepo, includePrivate }),
+            body: JSON.stringify({ owner: githubOwner, repo: githubRepo, includePrivate: true }),
           });
           const data = await response.json();
           if (response.ok) {
@@ -248,7 +248,7 @@ export default function Home() {
       }
     };
     fetchBranches();
-  }, [githubOwner, githubRepo, session, includePrivate]);
+  }, [githubOwner, githubRepo, session]);
 
   // targetDateやコミット取得設定が変更されたらコミット履歴を再取得
   useEffect(() => {
@@ -270,7 +270,7 @@ export default function Home() {
             branch: selectedBranch,
             date: dateString,
             reportType,
-            includePrivate,
+            includePrivate: true,
           }),
         });
 
@@ -754,19 +754,7 @@ export default function Home() {
                       placeholder="例: your-repo-name"
                     />
                   </div>
-                  <div className="flex items-center">
-                    <input
-                      id="include-private"
-                      name="include-private"
-                      type="checkbox"
-                      checked={includePrivate}
-                      onChange={(e) => setIncludePrivate(e.target.checked)}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor="include-private" className="ml-2 block text-sm text-gray-900">
-                      プライベートリポジトリを含める
-                    </label>
-                  </div>
+
                   <div>
                     <label htmlFor="branch-select" className="block text-sm font-medium text-gray-700">Branch:</label>
                     <select
