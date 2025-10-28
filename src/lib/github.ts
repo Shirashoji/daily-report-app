@@ -2,7 +2,6 @@
 import { auth } from '@/app/api/auth/[...nextauth]/route';
 import jwt from "jsonwebtoken";
 
-// TODO: The user will need to provide these environment variables.
 const GITHUB_APP_ID = process.env.GITHUB_APP_ID!;
 const GITHUB_APP_PRIVATE_KEY = process.env.GITHUB_APP_PRIVATE_KEY!;
 

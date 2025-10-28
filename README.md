@@ -1,58 +1,39 @@
-# Daily Report Generator
+# Daily Report App
 
-This is a Next.js application that helps you generate a daily work report from your Git commit history using Google's Gemini model.
+This is a Next.js application that generates reports based on GitHub commit history.
 
-## Features
+## Getting Started
 
-- **AI-Powered Report Generation**: Automatically generates a draft of your daily report based on the day's Git commits.
-- **Customizable Date**: You can select any date to generate a report for, not just today.
-- **Selectable AI Models**: Choose from different Gemini models (`2.5 Pro` / `2.5 Flash` / `2.5 Flash Lite`) to tailor the generation to your needs.
-- **AI-Powered Advice**: Get suggestions from the AI on how to improve your report, based on your past reports and today's commits.
-- **esa.io Integration**: 
-    - View a list of your past daily reports from esa.io directly within the app.
-    - You can specify the esa.io username to fetch reports from. The username is saved in your browser's local storage for convenience.
-- **Copy to Clipboard**: Easily copy the generated report to your clipboard.
+First, run the development server:
 
-## Setup
+```bash
+npm run dev
+```
 
-1.  **Clone the repository**
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-2.  **Install dependencies**:
-    ```bash
-    npm install
-    ```
+## GitHub App Setup
 
-3.  **Create Environment File**:
-    Create a `.env.local` file in the root of the `daily-report-app` directory and add the following environment variables:
+To enable fetching commit history from private repositories, you'll need to create a GitHub App and configure the following environment variables:
 
-    ```
-    GEMINI_API_KEY="YOUR_GOOGLE_AI_API_KEY"
-    ESA_API_KEY="YOUR_ESA_IO_API_KEY"
-    ESA_TEAM_NAME="YOUR_ESA_IO_TEAM_NAME"
-    ```
+- `AUTH_GITHUB_ID`: The client ID of your GitHub OAuth App.
+- `AUTH_GITHUB_SECRET`: The client secret of your GitHub OAuth App.
+- `GITHUB_APP_ID`: The ID of your GitHub App.
+- `GITHUB_APP_PRIVATE_KEY`: The private key of your GitHub App.
 
-    - `GEMINI_API_KEY`: You can get your API key from [Google AI Studio](https://aistudio.google.com/).
-    - `ESA_API_KEY`: Your esa.io API access token.
-    - `ESA_TEAM_NAME`: Your esa.io team name.
+### Creating a GitHub App
 
-## How to Use
+1. Go to your GitHub developer settings and create a new GitHub App.
+2. During the app creation process, you'll be asked to provide a callback URL. For local development, use `http://localhost:3000/api/auth/callback/github`.
+3. After creating the app, you'll be given a "Client ID" and you'll need to generate a "Client secret". These are your `AUTH_GITHUB_ID` and `AUTH_GITHUB_SECRET`.
+4. You'll also be given an "App ID". This is your `GITHUB_APP_ID`.
+5. Finally, you'll need to generate a private key. This will be a `.pem` file. The contents of this file are your `GITHUB_APP_PRIVATE_KEY`.
 
-1.  **Start the development server**:
-    ```bash
-    npm run dev
-    ```
-    The application will be available at `http://localhost:80`.
+Once you have these values, create a `.env.local` file in the root of the project and add them to it:
 
-2.  **Select the Date**: Choose the date for which you want to generate the report. The commit history for that day will be automatically fetched.
-
-3.  **Choose a Gemini Model**: Select the AI model you want to use for generation.
-
-4.  **Generate Report**: Click the "日報を生成" (Generate Report) button. The AI will generate a report in the text area on the right.
-
-5.  **View Past Reports**: 
-    - Click the "esa記事" (esa Articles) tab.
-    - Enter an esa.io username (defaults to `shirashoji`) and the app will automatically fetch and display a list of past reports from that user.
-
-6.  **Get Advice**: Click the "アドバイスを生成" (Generate Advice) button to get AI-powered suggestions for your report.
-
-7.  **Copy Report**: Once you are satisfied with the report, click the "クリップボードにコピー" (Copy to Clipboard) button.
+```
+AUTH_GITHUB_ID=...
+AUTH_GITHUB_SECRET=...
+GITHUB_APP_ID=...
+GITHUB_APP_PRIVATE_KEY=...
+```
