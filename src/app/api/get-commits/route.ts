@@ -78,7 +78,7 @@ export async function POST(request: Request) {
   console.log('github-commits API: Request received.');
   try {
     const body = await request.json();
-    const { owner, repo, branch, date, reportType } = body;
+    const { owner, repo, branch, date, reportType, includePrivate } = body;
 
     if (!owner || !repo) {
       return NextResponse.json({ error: 'owner and repo are required' }, { status: 400 });
