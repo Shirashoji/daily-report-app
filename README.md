@@ -18,6 +18,10 @@ To enable fetching commit history from private repositories, you'll need to crea
 
 - `AUTH_GITHUB_ID`: The client ID of your GitHub OAuth App.
 - `AUTH_GITHUB_SECRET`: The client secret of your GitHub OAuth App.
+- `AUTH_SECRET`: A secret key for NextAuth.js. You can generate a suitable secret on the command line:
+  ```bash
+  openssl rand -base64 32
+  ```
 - `GITHUB_APP_ID`: The ID of your GitHub App.
 - `GITHUB_APP_PRIVATE_KEY`: The private key of your GitHub App.
 
