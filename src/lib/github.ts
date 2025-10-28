@@ -36,6 +36,9 @@ export async function fetchFromGitHub(url: string) {
       throw error; // Re-throw custom error
     }
     // Handle network errors or other unexpected issues
+    if (error instanceof Error) {
+      throw new GitHubAPIError(`An unexpected error occurred while fetching from GitHub: ${error.message}`, 500);
+    }
     throw new GitHubAPIError('An unexpected error occurred while fetching from GitHub.', 500);
   }
 }
