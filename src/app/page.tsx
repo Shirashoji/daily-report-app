@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useSession, signIn, signOut } from 'next-auth/react';
 
 interface EsaArticle {
   name: string;
@@ -46,6 +47,7 @@ const groupWorkTimesByDay = (workTimes: { start: Date; end: Date | null; memo: s
 };
 
 export default function Home() {
+  const { data: session } = useSession();
   const [commitHistory, setCommitHistory] = useState('コミット履歴を読み込み中...');
   const [generatedText, setGeneratedText] = useState('');
   const [reportType, setReportType] = useState('daily'); // 'daily' or 'meeting'
@@ -57,13 +59,20 @@ export default function Home() {
   const [isLoadingEsa, setIsLoadingEsa] = useState(false);
   const [esaUser, setEsaUser] = useState('shirashoji');
   const [targetDate, setTargetDate] = useState(new Date());
-  const [localRepoPath, setLocalRepoPath] = useState('');
   const [workTimes, setWorkTimes] = useState<{ start: Date; end: Date | null; memo: string }[]>([]);
   const [isWorking, setIsWorking] = useState(false);
   const [currentMemo, setCurrentMemo] = useState('');
   const [editingWorkTimeIndex, setEditingWorkTimeIndex] = useState<number | null>(null);
   const [lastMeetingUrl, setLastMeetingUrl] = useState('');
   const [meetingCandidates, setMeetingCandidates] = useState<{ name: string, url: string }[]>([]);
+
+  // GitHub state
+  const [githubOwner, setGithubOwner] = useState('');
+  const [githubRepo, setGithubRepo] = useState('');
+  const [branches, setBranches] = useState<string[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState('all');
+  const [includePrivate, setIncludePrivate] = useState(false);
+
 
   // 作業開始処理
   const handleStartWork = () => {
@@ -163,9 +172,13 @@ export default function Home() {
     if (savedModel) {
       setModel(savedModel);
     }
-    const savedLocalRepoPath = localStorage.getItem('localRepoPath');
-    if (savedLocalRepoPath) {
-      setLocalRepoPath(savedLocalRepoPath);
+    const savedGithubOwner = localStorage.getItem('githubOwner');
+    if (savedGithubOwner) {
+      setGithubOwner(savedGithubOwner);
+    }
+    const savedGithubRepo = localStorage.getItem('githubRepo');
+    if (savedGithubRepo) {
+      setGithubRepo(savedGithubRepo);
     }
 
     const savedWorkTimes = localStorage.getItem('workTimes');
@@ -202,10 +215,40 @@ export default function Home() {
     localStorage.setItem('geminiModel', modelName);
   };
 
-  const handleSetLocalRepoPath = (path: string) => {
-    setLocalRepoPath(path);
-    localStorage.setItem('localRepoPath', path);
+  const handleSetGithubOwner = (owner: string) => {
+    setGithubOwner(owner);
+    localStorage.setItem('githubOwner', owner);
   };
+  const handleSetGithubRepo = (repo: string) => {
+    setGithubRepo(repo);
+    localStorage.setItem('githubRepo', repo);
+  };
+
+  // Fetch branches from GitHub
+  useEffect(() => {
+    const fetchBranches = async () => {
+      if (githubOwner && githubRepo && session) {
+        try {
+          const response = await fetch('/api/get-branches', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ owner: githubOwner, repo: githubRepo, includePrivate }),
+          });
+          const data = await response.json();
+          if (response.ok) {
+            setBranches(data.branches || []);
+          } else {
+            console.error('Failed to fetch branches:', data.error);
+            setBranches([]);
+          }
+        } catch (error) {
+          console.error('Error fetching branches:', error);
+          setBranches([]);
+        }
+      }
+    };
+    fetchBranches();
+  }, [githubOwner, githubRepo, session, includePrivate]);
 
   // targetDateやコミット取得設定が変更されたらコミット履歴を再取得
   useEffect(() => {
@@ -213,15 +256,24 @@ export default function Home() {
       setCommitHistory(`コミット履歴を読み込み中...`);
       try {
         const dateString = formatDate(targetDate);
-        let url = `/api/get-commits?date=${dateString}&reportType=${reportType}`;
-
-        if (!localRepoPath) {
-          setCommitHistory('ローカルリポジトリのパスを設定してください。');
+        if (!githubOwner || !githubRepo || !session) {
+          setCommitHistory('GitHubの情報を設定し、ログインしてください。');
           return;
         }
-        url += `&source=local&path=${encodeURIComponent(localRepoPath)}`;
 
-        const response = await fetch(url);
+        const response = await fetch('/api/get-commits', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            owner: githubOwner,
+            repo: githubRepo,
+            branch: selectedBranch,
+            date: dateString,
+            reportType,
+            includePrivate,
+          }),
+        });
+
         const data = await response.json();
         if (response.ok) {
           setCommitHistory(data.commits || 'この日のコミットはありませんでした。');
@@ -234,7 +286,7 @@ export default function Home() {
       }
     };
     fetchCommits();
-  }, [targetDate, localRepoPath, reportType]);
+  }, [targetDate, reportType, githubOwner, githubRepo, selectedBranch, session]);
 
   const fetchEsaArticles = useCallback(async () => {
     setIsLoadingEsa(true);
@@ -408,6 +460,18 @@ export default function Home() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">{reportType === 'daily' ? '日報作成ツール' : 'MTG資料作成ツール'}</h1>
         <div className="flex items-center space-x-4">
+          {session ? (
+            <>
+              <span className="text-gray-700">Signed in as {session.user?.name || session.user?.email}</span>
+              <button onClick={() => signOut()} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded">
+                Sign out
+              </button>
+            </>
+          ) : (
+            <button onClick={() => signIn('github')} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">
+              Sign in with GitHub
+            </button>
+          )}
           <Link href="/stats" className="text-blue-600 hover:underline">
             統計
           </Link>
@@ -459,7 +523,7 @@ export default function Home() {
               </div>
               <ul className="space-y-2">
                 {workTimes
-                  .map((wt, index) => ({ ...wt, originalIndex: index })) // 元のインデックスを保持
+                  .map((wt, _index) => ({ ...wt, originalIndex: _index })) // 元のインデックスを保持
                   .filter(wt => formatDate(wt.start) === formatDate(targetDate))
                   .map((wt) => (
                     <li key={wt.originalIndex} className="p-3 bg-gray-100 rounded-md">
@@ -525,7 +589,7 @@ export default function Home() {
                       </summary>
                       <ul className="mt-2 space-y-1">
                         {dailyWorkTimes
-                          .map((wt, index) => ({ ...wt, originalIndex: workTimes.indexOf(wt) })) // 元のインデックスを保持
+                          .map((wt, _index) => ({ ...wt, originalIndex: workTimes.indexOf(wt) })) // 元のインデックスを保持
                           .map((wt) => (
                             <li key={wt.originalIndex} className="p-2 bg-white rounded-md">
                               <div className="flex items-center justify-between mb-1">
@@ -669,15 +733,56 @@ export default function Home() {
                 <div className="space-y-4 mb-4 p-4 border rounded-md">
                   <h3 className="text-lg font-medium">コミット取得設定</h3>
                   <div>
-                    <label htmlFor="local-repo-path" className="block text-sm font-medium text-gray-700">ローカルリポジトリのパス:</label>
+                    <label htmlFor="github-owner" className="block text-sm font-medium text-gray-700">GitHub Owner:</label>
                     <input
                       type="text"
-                      id="local-repo-path"
-                      value={localRepoPath}
-                      onChange={(e) => handleSetLocalRepoPath(e.target.value)}
+                      id="github-owner"
+                      value={githubOwner}
+                      onChange={(e) => handleSetGithubOwner(e.target.value)}
                       className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                      placeholder="例: /path/to/your/repo"
+                      placeholder="例: your-github-username"
                     />
+                  </div>
+                  <div>
+                    <label htmlFor="github-repo" className="block text-sm font-medium text-gray-700">GitHub Repo:</label>
+                    <input
+                      type="text"
+                      id="github-repo"
+                      value={githubRepo}
+                      onChange={(e) => handleSetGithubRepo(e.target.value)}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                      placeholder="例: your-repo-name"
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      id="include-private"
+                      name="include-private"
+                      type="checkbox"
+                      checked={includePrivate}
+                      onChange={(e) => setIncludePrivate(e.target.checked)}
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="include-private" className="ml-2 block text-sm text-gray-900">
+                      プライベートリポジトリを含める
+                    </label>
+                  </div>
+                  <div>
+                    <label htmlFor="branch-select" className="block text-sm font-medium text-gray-700">Branch:</label>
+                    <select
+                      id="branch-select"
+                      value={selectedBranch}
+                      onChange={(e) => setSelectedBranch(e.target.value)}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                      disabled={branches.length === 0}
+                    >
+                      <option value="all">All Branches</option>
+                      {branches.map(branch => (
+                        <option key={branch} value={branch}>
+                          {branch}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 <pre className="bg-gray-100 p-2 rounded-md overflow-auto h-80">{commitHistory}</pre>
@@ -699,8 +804,8 @@ export default function Home() {
                     <p>読み込み中...</p>
                   ) : (
                     <ul>
-                      {esaArticles.map((article, index) => (
-                        <li key={index} className="mb-2">
+                      {esaArticles.map((article, _index) => (
+                        <li key={_index} className="mb-2">
                           <a href={article.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                             {article.name}
                           </a>

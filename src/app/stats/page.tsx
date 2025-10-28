@@ -26,7 +26,10 @@ const StatsPage = () => {
       
       if (parsedWorkTimes.length > 0) {
         const firstEntry = new Date(parsedWorkTimes[0].start);
-        setFirstDate(firstEntry.toLocaleDateString('ja-JP'));
+        const year = firstEntry.getFullYear();
+        const month = (firstEntry.getMonth() + 1).toString().padStart(2, '0');
+        const day = firstEntry.getDate().toString().padStart(2, '0');
+        setFirstDate(`${year}/${month}/${day}`);
       }
 
       const total = parsedWorkTimes
