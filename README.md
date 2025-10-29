@@ -28,7 +28,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## GitHub App Setup
 
-To enable fetching commit history from private repositories, you'll need to create a single **GitHub App**. This app will provide all the necessary credentials for authentication.
+This application uses a single **GitHub App** to handle both user authentication (OAuth) and API access (as an App installation). You do not need a separate OAuth App. The setup process involves creating one GitHub App and collecting four key credentials from its settings page.
 
 ### Creating a GitHub App
 
@@ -61,19 +61,21 @@ After creating the app, you will be redirected to its settings page. You need to
 
 ### Configure Environment Variables
 
-Create a `.env.local` file in the root of the project and add the credentials you collected:
+Create a `.env.local` file in the root of the project and add the credentials you collected. Note that `AUTH_GITHUB_ID` and `GITHUB_APP_ID` are different values, but they both come from the same GitHub App.
 
 ```
 # .env.local
 
-# Credentials from your GitHub App's settings page
+# The "Client ID" from your GitHub App. Used for NextAuth.js user login.
 AUTH_GITHUB_ID=YOUR_CLIENT_ID
+
+# The "Client Secret" from your GitHub App. Used for NextAuth.js user login.
 AUTH_GITHUB_SECRET=YOUR_CLIENT_SECRET
 
-# App ID from the "About" section of your GitHub App
+# The "App ID" from your GitHub App. Used for generating API tokens.
 GITHUB_APP_ID=YOUR_APP_ID
 
-# The full contents of the .pem file you downloaded
+# The full contents of the .pem private key file you downloaded.
 GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\n..."
 
 # A secret for NextAuth.js session encryption. Generate with: openssl rand -base64 32
