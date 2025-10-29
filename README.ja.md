@@ -41,7 +41,9 @@ npm run dev
     *   **Webhook:** とりあえず「Active」チェックボックスをオフにします。
 4.  **リポジトリの権限を設定:**
     *   「Repository permissions」セクションで、**Contents**を見つけ、ドロップダウンから**Read-only**を選択します。これはコミット履歴の読み取りに必要です。
-5.  **アプリを作成:** ページ下部の**Create GitHub App**ボタンをクリックします。
+5.  **インストール権限の設定:**
+    *   「Where can this GitHub App be installed?」セクションで、**Only on this account**を選択します。これにより、アプリの権限が自分のアカウントに限定されます。
+6.  **アプリを作成:** ページ下部の**Create GitHub App**ボタンをクリックします。
 
 ### 資格情報の収集
 

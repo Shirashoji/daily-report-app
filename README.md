@@ -41,7 +41,9 @@ To enable fetching commit history from private repositories, you'll need to crea
     *   **Webhook:** Uncheck the "Active" checkbox for now.
 4.  **Set Repository Permissions:**
     *   Under the "Repository permissions" section, find **Contents** and select **Read-only** from the dropdown. This is required to read commit history.
-5.  **Create the App:** Click the **Create GitHub App** button at the bottom of the page.
+5.  **Set Installation Permissions:**
+    *   Under the "Where can this GitHub App be installed?" section, select **Only on this account**. This ensures the app's permissions are restricted to your account.
+6.  **Create the App:** Click the **Create GitHub App** button at the bottom of the page.
 
 ### Collecting Credentials
 
