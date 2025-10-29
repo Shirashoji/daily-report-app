@@ -3,18 +3,32 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
+/**
+ * Represents a work time entry.
+ */
 interface WorkTime {
   start: string;
   end: string | null;
   memo: string;
 }
 
+/**
+ * Calculates the duration of work in minutes.
+ * @param {Date} start - The start time.
+ * @param {Date | null} end - The end time.
+ * @returns {number} The duration in minutes.
+ */
 const calculateWorkDuration = (start: Date, end: Date | null): number => {
   if (!end) return 0;
   const diff = end.getTime() - start.getTime();
   return Math.round(diff / (1000 * 60)); // in minutes
 };
 
+/**
+ * A page that displays statistics about work time.
+ * It reads work time data from localStorage and calculates the total work time and the first recorded date.
+ * @returns {React.ReactElement} The stats page.
+ */
 const StatsPage = () => {
   const [totalMinutes, setTotalMinutes] = useState(0);
   const [firstDate, setFirstDate] = useState<string | null>(null);
