@@ -2,6 +2,20 @@
 
 This is a Next.js application that generates reports based on GitHub commit history.
 
+## Features
+
+*   **GitHub Authentication:** Securely sign in with your GitHub account.
+*   **Repository Selection:** Select a repository to generate a report from.
+*   **Date Range Selection:** Choose a start and end date for the report.
+*   **Commit History Report:** View a report of commits for the selected repository and date range.
+
+## Tech Stack
+
+*   **Next.js:** A React framework for building server-side rendered and static web applications.
+*   **NextAuth.js:** An authentication library for Next.js applications.
+*   **Tailwind CSS:** A utility-first CSS framework for rapid UI development.
+*   **TypeScript:** A statically typed superset of JavaScript.
+
 ## Getting Started
 
 First, run the development server:
@@ -67,3 +81,29 @@ AUTH_SECRET=YOUR_GENERATED_SECRET
 ```
 
 Once your `.env.local` file is set up, you can start the application, and it will be able to authenticate with GitHub.
+
+## Deployment
+
+This application is designed to be deployed to [Netlify](https://www.netlify.com/).
+
+### 1. Update GitHub App Settings
+
+Before deploying, you need to update the **Callback URL** in your GitHub App settings to match your Netlify production URL.
+
+1.  Navigate to your **[GitHub App settings](https://github.com/settings/apps)**.
+2.  Select the app you created for this project.
+3.  Update the **Callback URL** to `https://<YOUR_NETLIFY_SITE_NAME>.netlify.app/api/auth/callback/github`.
+4.  Save the changes.
+
+### 2. Configure Netlify
+
+1.  Push your code to a GitHub repository.
+2.  Go to your [Netlify dashboard](https://app.netlify.com/) and create a new site from the repository.
+3.  During the setup, Netlify will detect that it's a Next.js project and configure the build settings automatically.
+4.  Go to **Site settings** > **Build & deploy** > **Environment** and add the same environment variables you defined in your `.env.local` file:
+    *   `AUTH_GITHUB_ID`
+    *   `AUTH_GITHUB_SECRET`
+    *   `GITHUB_APP_ID`
+    *   `GITHUB_APP_PRIVATE_KEY`
+    *   `AUTH_SECRET`
+5.  Trigger a new deploy from the **Deploys** tab to apply the environment variables.
