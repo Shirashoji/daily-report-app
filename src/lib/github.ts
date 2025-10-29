@@ -14,11 +14,11 @@ export class GitHubAPIError extends Error {
   }
 }
 
-async function getInstallationAccessToken(installationId: string) {
+export async function getInstallationAccessToken(installationId: string) {
   const now = Math.floor(Date.now() / 1000);
   const payload = {
     iat: now,
-    exp: now + 60, // 1 minute
+    exp: now + 600, // 10 minutes
     iss: GITHUB_APP_ID,
   };
 
