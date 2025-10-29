@@ -2,6 +2,19 @@
 
 This is a Next.js application that generates reports based on GitHub commit history.
 
+## Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [GitHub App Setup](#github-app-setup)
+  - [Creating a GitHub App](#creating-a-github-app)
+  - [Collecting Credentials](#collecting-credentials)
+  - [Configure Environment Variables](#configure-environment-variables)
+- [Deployment](#deployment)
+  - [1. Update GitHub App Settings](#1-update-github-app-settings)
+  - [2. Configure Netlify](#2-configure-netlify)
+
 ## Features
 
 *   **GitHub Authentication:** Securely sign in with your GitHub account.
@@ -18,17 +31,32 @@ This is a Next.js application that generates reports based on GitHub commit hist
 
 ## Getting Started
 
-First, run the development server:
+1.  **Install Dependencies:**
+    Clone the repository and install the required dependencies.
+    ```bash
+    npm install
+    ```
 
-```bash
-npm run dev
-```
+2.  **Set Up Environment Variables:**
+    This project requires several environment variables for authentication. Copy the example file:
+    ```bash
+    cp .env.local.example .env.local
+    ```
+    Then, follow the detailed instructions in the [GitHub App Setup](#github-app-setup) section to create a GitHub App and populate your `.env.local` file with the necessary credentials.
+
+3.  **Run the Development Server:**
+    Once your environment variables are configured, start the development server:
+    ```bash
+    npm run dev
+    ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## GitHub App Setup
 
-This application uses a single **GitHub App** to handle both user authentication (OAuth) and API access (as an App installation). You do not need a separate OAuth App. The setup process involves creating one GitHub App and collecting four key credentials from its settings page.
+This application uses a single **GitHub App** to handle both user authentication (OAuth) and API access (as an App installation). This approach is more secure and flexible than using personal access tokens, as it allows for fine-grained permissions and acts on behalf of the application itself. You do not need a separate OAuth App.
+
+The setup process involves creating one GitHub App and collecting four key credentials from its settings page.
 
 ### Creating a GitHub App
 

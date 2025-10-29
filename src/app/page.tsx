@@ -4,13 +4,20 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSession, signIn, signOut } from 'next-auth/react';
 
+/**
+ * Represents an article from esa.io.
+ */
 interface EsaArticle {
   name: string;
   url: string;
   body_md: string;
 }
 
-// DateをYYYY-MM-DD形式の文字列に変換するヘルパー関数
+/**
+ * Helper function to format a Date object into a YYYY-MM-DD string.
+ * @param {Date} date - The date to format.
+ * @returns {string} The formatted date string.
+ */
 const formatDate = (date: Date) => {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -18,7 +25,11 @@ const formatDate = (date: Date) => {
   return `${year}-${month}-${day}`;
 };
 
-// Helper to get all dates in the week of a given date (Monday to Sunday)
+/**
+ * Helper function to get all dates in the week of a given date (Monday to Sunday).
+ * @param {Date} date - The date to get the week of.
+ * @returns {string[]} An array of formatted date strings (YYYY-MM-DD) for the week.
+ */
 const getDatesInWeek = (date: Date) => {
   const startOfWeek = new Date(date);
   startOfWeek.setDate(date.getDate() - (date.getDay() === 0 ? 6 : date.getDay() - 1)); // Monday
@@ -33,7 +44,14 @@ const getDatesInWeek = (date: Date) => {
   return dates;
 };
 
-// Helper to group work times by day
+/**
+ * Helper function to group work times by day.
+ * @param {object[]} workTimes - An array of work time objects.
+ * @param {Date} workTimes.start - The start time.
+ * @param {Date | null} workTimes.end - The end time.
+ * @param {string} workTimes.memo - The memo.
+ * @returns {object} An object with dates as keys and arrays of work time objects as values.
+ */
 const groupWorkTimesByDay = (workTimes: { start: Date; end: Date | null; memo: string }[]) => {
   const grouped: { [key: string]: { start: Date; end: Date | null; memo: string }[] } = {};
   workTimes.forEach(wt => {
@@ -46,6 +64,11 @@ const groupWorkTimesByDay = (workTimes: { start: Date; end: Date | null; memo: s
   return grouped;
 };
 
+/**
+ * The main page of the application.
+ * It allows users to generate reports based on their GitHub commit history and work time.
+ * @returns {React.ReactElement} The home page.
+ */
 export default function Home() {
   const { data: session } = useSession();
   const [commitHistory, setCommitHistory] = useState('コミット履歴を読み込み中...');

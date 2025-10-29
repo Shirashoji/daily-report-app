@@ -12,6 +12,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
+    /**
+     * This callback is called whenever a JSON Web Token is created (i.e. on sign in).
+     * We want to add the access_token and installationId to the token.
+     * @param {object} token - The token that is about to be saved.
+     * @param {object} account - The account that was just used to sign in.
+     * @returns {object} The token with the access_token and installationId.
+     * @see https://next-auth.js.org/configuration/callbacks#jwt-callback
+     */
     async jwt({ token, account }) {
       if (account) {
         token.accessToken = account.access_token as string;
@@ -36,6 +44,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return token;
     },
+
+    /**
+     * This callback is called whenever a session is checked.
+     * We want to add the access_token and installationId to the session.
+     * @param {object} session - The session that is about to be saved.
+     * @param {object} token - The token that was just used to sign in.
+     * @returns {object} The session with the access_token and installationId.
+     * @see https://next-auth.js.org/configuration/callbacks#session-callback
+     */
     async session({ session, token }) {
       session.accessToken = token.accessToken as string;
       session.installationId = token.installationId as string;

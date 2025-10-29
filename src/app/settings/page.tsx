@@ -3,6 +3,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
+/**
+ * A page where users can configure their settings for various services.
+ * Currently supports Gemini, esa.io, and custom template variables.
+ * The settings are saved to localStorage.
+ * @returns {React.ReactElement} The settings page.
+ */
 export default function SettingsPage() {
   const [geminiApiKey, setGeminiApiKey] = useState('');
   const [esaTeam, setEsaTeam] = useState('');
