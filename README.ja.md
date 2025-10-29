@@ -28,7 +28,7 @@ npm run dev
 
 ## GitHub Appのセットアップ
 
-プライベートリポジトリからコミット履歴を取得するには、単一の**GitHub App**を作成する必要があります。このアプリは、認証に必要なすべての資格情報を提供します。
+このアプリケーションは、ユーザー認証（OAuth）とAPIアクセス（App installationとして）の両方を処理するために、単一の**GitHub App**を使用します。別途OAuth Appを作成する必要はありません。セットアッププロセスでは、1つのGitHub Appを作成し、その設定ページから4つの主要な資格情報を収集します。
 
 ### GitHub Appの作成
 
@@ -61,22 +61,24 @@ npm run dev
 
 ### 環境変数の設定
 
-プロジェクトのルートに`.env.local`ファイルを作成し、収集した資格情報を追加します。
+プロジェクトのルートに`.env.local`ファイルを作成し、収集した資格情報を追加します。`AUTH_GITHUB_ID`と`GITHUB_APP_ID`は異なる値ですが、どちらも同じGitHub Appから取得する点に注意してください。
 
 ```
 # .env.local
 
-# GitHub Appの設定ページからの資格情報
+# GitHub Appの「Client ID」。NextAuth.jsのユーザーログインに使用されます。
 AUTH_GITHUB_ID=YOUR_CLIENT_ID
+
+# GitHub Appの「Client Secret」。NextAuth.jsのユーザーログインに使用されます。
 AUTH_GITHUB_SECRET=YOUR_CLIENT_SECRET
 
-# GitHub Appの「About」セクションからのApp ID
+# GitHub Appの「App ID」。APIトークンの生成に使用されます。
 GITHUB_APP_ID=YOUR_APP_ID
 
-# ダウンロードした.pemファイルの内容全体
+# ダウンロードした.pem形式の秘密鍵ファイルの内容全体。
 GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\n..."
 
-# NextAuth.jsのセッション暗号化用シークレット。openssl rand -base64 32で生成
+# NextAuth.jsのセッション暗号化用シークレット。openssl rand -base64 32などで生成してください。
 AUTH_SECRET=YOUR_GENERATED_SECRET
 ```
 
