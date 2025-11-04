@@ -1,5 +1,5 @@
 // src/lib/github.ts
-import { auth } from '@/app/api/auth/[...nextauth]/route';
+import { auth } from '@/auth';
 import jwt from "jsonwebtoken";
 
 const GITHUB_APP_ID = process.env.GITHUB_APP_ID!;
