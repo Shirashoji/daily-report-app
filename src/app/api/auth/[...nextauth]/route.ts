@@ -2,12 +2,23 @@
 import NextAuth from "next-auth"
 import GitHub from "next-auth/providers/github";
 
+// Check for required environment variables
+if (!process.env.AUTH_GITHUB_ID) {
+  throw new Error("Missing AUTH_GITHUB_ID environment variable");
+}
+if (!process.env.AUTH_GITHUB_SECRET) {
+  throw new Error("Missing AUTH_GITHUB_SECRET environment variable");
+}
+if (!process.env.AUTH_SECRET) {
+  throw new Error("Missing AUTH_SECRET environment variable");
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.AUTH_SECRET,
   providers: [
     GitHub({
-      clientId: process.env.AUTH_GITHUB_ID!,
-      clientSecret: process.env.AUTH_GITHUB_SECRET!,
+      clientId: process.env.AUTH_GITHUB_ID,
+      clientSecret: process.env.AUTH_GITHUB_SECRET,
       authorization: { params: { scope: "repo" } },
     }),
   ],
