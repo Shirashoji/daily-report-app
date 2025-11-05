@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSession, signIn, signOut } from 'next-auth/react';
+import { getFromIndexedDB, setToIndexedDB } from '@/lib/indexeddb';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -189,49 +190,57 @@ export default function Home() {
 
   // localStorageから永続化されたデータを読み込む
   useEffect(() => {
-    const savedUser = localStorage.getItem('esaUser');
-    if (savedUser) {
-      setEsaUser(savedUser);
-    }
-    const savedModel = localStorage.getItem('geminiModel');
-    if (savedModel) {
-      setModel(savedModel);
-    }
-    const savedGithubOwner = localStorage.getItem('githubOwner');
-    if (savedGithubOwner) {
-      setGithubOwner(savedGithubOwner);
-    }
-    const savedGithubRepo = localStorage.getItem('githubRepo');
-    if (savedGithubRepo) {
-      setGithubRepo(savedGithubRepo);
-    }
+    const loadData = async () => {
+      const savedUser = localStorage.getItem('esaUser');
+      if (savedUser) {
+        setEsaUser(savedUser);
+      }
+      const savedModel = localStorage.getItem('geminiModel');
+      if (savedModel) {
+        setModel(savedModel);
+      }
+      const savedGithubOwner = localStorage.getItem('githubOwner');
+      if (savedGithubOwner) {
+        setGithubOwner(savedGithubOwner);
+      }
+      const savedGithubRepo = localStorage.getItem('githubRepo');
+      if (savedGithubRepo) {
+        setGithubRepo(savedGithubRepo);
+      }
 
-    const savedWorkTimes = localStorage.getItem('workTimes');
-    if (savedWorkTimes) {
       try {
-        const parsedWorkTimes = JSON.parse(savedWorkTimes).map((wt: { start: string; end: string | null; memo: string }) => ({
-          start: new Date(wt.start),
-          end: wt.end ? new Date(wt.end) : null,
-          memo: wt.memo || '',
-        }));
-        setWorkTimes(parsedWorkTimes);
+        const savedWorkTimes = await getFromIndexedDB<any[]>('workTimes');
+        if (savedWorkTimes) {
+          const parsedWorkTimes = savedWorkTimes.map((wt: { start: string; end: string | null; memo: string }) => ({
+            start: new Date(wt.start),
+            end: wt.end ? new Date(wt.end) : null,
+            memo: wt.memo || '',
+          }));
+          setWorkTimes(parsedWorkTimes);
 
-        // 作業中かどうかを判定
-        const lastWorkTime = parsedWorkTimes[parsedWorkTimes.length - 1];
-        if (lastWorkTime && lastWorkTime.end === null) {
-          setIsWorking(true);
+          const lastWorkTime = parsedWorkTimes[parsedWorkTimes.length - 1];
+          if (lastWorkTime && lastWorkTime.end === null) {
+            setIsWorking(true);
+          }
         }
       } catch (error) {
-        console.error("Error parsing workTimes from localStorage:", error);
-        // エラーが発生した場合はworkTimesを初期化
+        console.error("Error loading workTimes from IndexedDB:", error);
         setWorkTimes([]);
       }
-    }
+    };
+    loadData();
   }, []);
 
-  // workTimesが変更されたらlocalStorageに保存
+  // workTimesが変更されたらIndexedDBに保存
   useEffect(() => {
-    localStorage.setItem('workTimes', JSON.stringify(workTimes));
+    const saveWorkTimes = async () => {
+      try {
+        await setToIndexedDB('workTimes', workTimes);
+      } catch (error) {
+        console.error("Error saving workTimes to IndexedDB:", error);
+      }
+    };
+    saveWorkTimes();
   }, [workTimes]);
 
   // ユーザー名をlocalStorageに保存するカスタムセッター
@@ -393,16 +402,15 @@ export default function Home() {
     const generatingText = reportType === 'daily' ? "日報生成中..." : "MTG資料生成中...";
     setGeneratedText(generatingText);
 
-    const savedCustomVars = localStorage.getItem('customVariables');
-    let customVariables = {};
-    if (savedCustomVars) {
-      try {
-        customVariables = JSON.parse(savedCustomVars);
-      } catch (error) {
-        console.error("Error parsing customVariables from localStorage:", error);
-        // エラーが発生した場合はcustomVariablesを初期化
-        customVariables = {};
+    let customVariables: { [key: string]: any } = {};
+    try {
+      const savedCustomVars = await getFromIndexedDB<{ [key: string]: any }>('customVariables');
+      if (savedCustomVars) {
+        customVariables = savedCustomVars;
       }
+    } catch (error) {
+      console.error("Error loading customVariables from IndexedDB:", error);
+      customVariables = {};
     }
 
     let lastMeetingContent = '';
