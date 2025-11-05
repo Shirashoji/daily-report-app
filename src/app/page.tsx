@@ -7,6 +7,9 @@ import { getFromIndexedDB, setToIndexedDB } from '@/lib/indexeddb';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+
+const GITHUB_APP_NAME = process.env.NEXT_PUBLIC_GITHUB_APP_NAME;
+
 /**
  * Represents an article from esa.io.
  */
@@ -74,11 +77,15 @@ const groupWorkTimesByDay = (workTimes: { start: Date; end: Date | null; memo: s
  */
 export default function Home() {
   const { data: session } = useSession();
+  useEffect(() => {
+    if (session?.error) {
+      alert(`Authentication Error: ${session.error}`);
+      signOut(); // Force sign out to clear the session
+    }
+  }, [session]);
   const [commitHistory, setCommitHistory] = useState('コミット履歴を読み込み中...');
   const [generatedText, setGeneratedText] = useState('');
   const [reportType, setReportType] = useState('daily'); // 'daily' or 'meeting'
-  const [advice, setAdvice] = useState('');
-  const [isGeneratingAdvice, setIsGeneratingAdvice] = useState(false);
   const [model, setModel] = useState('gemini-2.5-flash');
   const [activeTab, setActiveTab] = useState('commits');
   const [esaArticles, setEsaArticles] = useState<EsaArticle[]>([]);
@@ -96,6 +103,7 @@ export default function Home() {
   const [githubOwner, setGithubOwner] = useState('');
   const [githubRepo, setGithubRepo] = useState('');
   const [branches, setBranches] = useState<string[]>([]);
+  const [branchesError, setBranchesError] = useState<string | null>(null);
   const [selectedBranch, setSelectedBranch] = useState('all');
 
 
@@ -268,23 +276,33 @@ export default function Home() {
   useEffect(() => {
     const fetchBranches = async () => {
       if (githubOwner && githubRepo && session) {
+        setBranchesError(null);
+        console.log(`Fetching branches for owner: ${githubOwner}, repo: ${githubRepo}`);
         try {
           const response = await fetch(`${API_BASE_URL}/api/get-branches`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ owner: githubOwner, repo: githubRepo, includePrivate: true }),
+            body: JSON.stringify({ owner: githubOwner, repo: githubRepo }),
           });
           const data = await response.json();
           if (response.ok) {
             setBranches(data.branches || []);
           } else {
-            console.error('Failed to fetch branches:', data.error);
+            const errorDetails = data.details ? `: ${data.details}` : '';
+            console.error(`Failed to fetch branches: ${data.error}${errorDetails}`);
             setBranches([]);
+            const errorMessage = data.details ? `${data.error}: ${data.details}` : data.error;
+            setBranchesError(errorMessage || 'Failed to fetch branches.');
           }
         } catch (error) {
           console.error('Error fetching branches:', error);
           setBranches([]);
+          const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+          setBranchesError(errorMessage);
         }
+      } else {
+        setBranches([]);
+        setBranchesError(null);
       }
     };
     fetchBranches();
@@ -310,7 +328,6 @@ export default function Home() {
             branch: selectedBranch,
             date: dateString,
             reportType,
-            includePrivate: true,
           }),
         });
 
@@ -472,36 +489,6 @@ export default function Home() {
     }
   };
 
-  const getAdvice = async () => {
-    setIsGeneratingAdvice(true);
-    setAdvice('アドバイスを生成中...');
-    try {
-      const [templateRes, pastReportsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/daily-template.md`),
-        fetch(`${API_BASE_URL}/api/get-past-reports?user=${esaUser}`),
-      ]);
-
-      const template = await templateRes.text();
-      const { reports: pastReports } = await pastReportsRes.json();
-      const reportBodies = pastReports.map((r: EsaArticle) => r.body_md);
-
-      const adviceRes = await fetch(`${API_BASE_URL}/api/generate-advice`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ template, pastReports: reportBodies, commits: commitHistory, model }),
-      });
-
-      const { advice } = await adviceRes.json();
-      setAdvice(advice);
-    } catch (error) {
-      console.error("Error generating advice:", error);
-      setAdvice("アドバイスの生成に失敗しました。");
-    } finally {
-      setIsGeneratingAdvice(false);
-    }
-  };
 
   return (
     <div className="container mx-auto p-4">
@@ -516,9 +503,21 @@ export default function Home() {
               </button>
             </>
           ) : (
-            <button onClick={() => signIn('github')} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">
-              Sign in with GitHub
-            </button>
+            <div className="flex items-center space-x-2">
+              <button onClick={() => signIn('github')} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">
+                Sign in with GitHub
+              </button>
+              {GITHUB_APP_NAME && (
+                <a 
+                  href={`https://github.com/apps/${GITHUB_APP_NAME}/installations/new`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded"
+                >
+                  Install App
+                </a>
+              )}
+            </div>
           )}
           <Link href="/stats" className="text-blue-600 hover:underline">
             統計
@@ -819,6 +818,7 @@ export default function Home() {
                         </option>
                       ))}
                     </select>
+                    {branchesError && <p className="text-red-500 text-sm mt-1">{branchesError}</p>}
                   </div>
                 </div>
                 <pre className="bg-gray-100 p-2 rounded-md overflow-auto h-80">{commitHistory}</pre>
@@ -880,21 +880,6 @@ export default function Home() {
         </button>
       </div>
 
-      {reportType === 'daily' && (
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-2">日報作成アドバイス</h2>
-          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md">
-            <button
-              className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded mb-4"
-              onClick={getAdvice}
-              disabled={isGeneratingAdvice}
-            >
-              {isGeneratingAdvice ? 'アドバイス生成中...' : 'アドバイスを生成'}
-            </button>
-            {advice && <pre className="whitespace-pre-wrap">{advice}</pre>}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

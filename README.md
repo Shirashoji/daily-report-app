@@ -17,31 +17,34 @@ This is a Next.js application that generates reports based on GitHub commit hist
 
 ## Features
 
-*   **GitHub Authentication:** Securely sign in with your GitHub account.
-*   **Repository Selection:** Select a repository to generate a report from.
-*   **Date Range Selection:** Choose a start and end date for the report.
-*   **Commit History Report:** View a report of commits for the selected repository and date range.
+- **GitHub Authentication:** Securely sign in with your GitHub account.
+- **Repository Selection:** Select a repository to generate a report from.
+- **Date Range Selection:** Choose a start and end date for the report.
+- **Commit History Report:** View a report of commits for the selected repository and date range.
 
 ## Tech Stack
 
-*   **Next.js:** A React framework for building server-side rendered and static web applications.
-*   **NextAuth.js:** An authentication library for Next.js applications.
-*   **Tailwind CSS:** A utility-first CSS framework for rapid UI development.
-*   **TypeScript:** A statically typed superset of JavaScript.
+- **Next.js:** A React framework for building server-side rendered and static web applications.
+- **NextAuth.js:** An authentication library for Next.js applications.
+- **Tailwind CSS:** A utility-first CSS framework for rapid UI development.
+- **TypeScript:** A statically typed superset of JavaScript.
 
 ## Getting Started
 
 1.  **Install Dependencies:**
     Clone the repository and install the required dependencies.
+
     ```bash
     npm install
     ```
 
 2.  **Set Up Environment Variables:**
     This project requires several environment variables for authentication. Copy the example file:
+
     ```bash
     cp .env.local.example .env.local
     ```
+
     Then, follow the detailed instructions in the [GitHub App Setup](#github-app-setup) section to create a GitHub App and populate your `.env.local` file with the necessary credentials.
 
 3.  **Run the Development Server:**
@@ -50,7 +53,7 @@ This is a Next.js application that generates reports based on GitHub commit hist
     npm run dev
     ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:80](http://localhost:80) with your browser to see the result.
 
 ## GitHub App Setup
 
@@ -63,12 +66,12 @@ The setup process involves creating one GitHub App and collecting four key crede
 1.  **Navigate to Developer Settings:** Go to your GitHub developer settings by clicking on your profile picture in the top-right corner, then selecting **Settings** > **Developer settings**.
 2.  **Create a New GitHub App:** Click on **GitHub Apps** in the left sidebar, and then click the **New GitHub App** button.
 3.  **Fill in the App Details:**
-    *   **GitHub App name:** Give your application a unique name (e.g., "Daily Report App for [Your Name]").
-    *   **Homepage URL:** Enter the application's homepage URL. For local development, you can use `http://localhost:3000`.
-    *   **Callback URL:** In the "Identifying and authorizing users" section, find the **Callback URL** field. Enter `http://localhost:3000/api/auth/callback/github`.
-    *   **Webhook:** Uncheck the "Active" checkbox for now.
+    - **GitHub App name:** Give your application a unique name (e.g., "Daily Report App for [Your Name]").
+    - **Homepage URL:** Enter the application's homepage URL. For local development, you can use `http://localhost:80`.
+    - **Callback URL:** In the "Identifying and authorizing users" section, find the **Callback URL** field. Enter `http://localhost:80/api/auth/callback/github`.
+    - **Webhook:** Uncheck the "Active" checkbox for now.
 4.  **Set Repository Permissions:**
-    *   Under the "Repository permissions" section, find **Contents** and select **Read-only** from the dropdown. This is required to read commit history.
+    - Under the "Repository permissions" section, find **Contents** and select **Read-only** from the dropdown. This is required to read commit history.
 5.  **Create the App:** Click the **Create GitHub App** button at the bottom of the page.
 
 ### Collecting Credentials
@@ -76,16 +79,16 @@ The setup process involves creating one GitHub App and collecting four key crede
 After creating the app, you will be redirected to its settings page. You need to collect the following four credentials:
 
 1.  **Client ID (`AUTH_GITHUB_ID`):**
-    *   This is displayed at the top of the settings page under "Client ID".
+    - This is displayed at the top of the settings page under "Client ID".
 
 2.  **Client Secret (`AUTH_GITHUB_SECRET`):**
-    *   Click the **Generate a new client secret** button. Copy the generated secret immediately, as you won't be able to see it again.
+    - Click the **Generate a new client secret** button. Copy the generated secret immediately, as you won't be able to see it again.
 
 3.  **App ID (`GITHUB_APP_ID`):**
-    *   This is listed in the "About" section of the settings page under "App ID".
+    - This is listed in the "About" section of the settings page under "App ID".
 
 4.  **Private Key (`GITHUB_APP_PRIVATE_KEY`):**
-    *   Scroll down to the "Private keys" section and click **Generate a private key**. A `.pem` file will be downloaded. Open this file with a text editor and copy its entire contents.
+    - Scroll down to the "Private keys" section and click **Generate a private key**. A `.pem` file will be downloaded. Open this file with a text editor and copy its entire contents.
 
 ### Configure Environment Variables
 
@@ -131,9 +134,9 @@ Before deploying, you need to update the **Callback URL** in your GitHub App set
 2.  Go to your [Netlify dashboard](https://app.netlify.com/) and create a new site from the repository.
 3.  During the setup, Netlify will detect that it's a Next.js project and configure the build settings automatically.
 4.  Go to **Site settings** > **Build & deploy** > **Environment** and add the same environment variables you defined in your `.env.local` file:
-    *   `AUTH_GITHUB_ID`
-    *   `AUTH_GITHUB_SECRET`
-    *   `GITHUB_APP_ID`
-    *   `GITHUB_APP_PRIVATE_KEY`
-    *   `AUTH_SECRET`
+    - `AUTH_GITHUB_ID`
+    - `AUTH_GITHUB_SECRET`
+    - `GITHUB_APP_ID`
+    - `GITHUB_APP_PRIVATE_KEY`
+    - `AUTH_SECRET`
 5.  Trigger a new deploy from the **Deploys** tab to apply the environment variables.

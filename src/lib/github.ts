@@ -65,23 +65,29 @@ async function getInstallationAccessToken(installationId: string) {
 async function getGitHubHeaders() {
   const session = await auth();
   if (!session) {
+    console.error('getGitHubHeaders: No session found.');
     throw new GitHubAPIError('Unauthorized: No session found.', 401);
   }
 
-  let token = session.accessToken;
+  console.log('getGitHubHeaders: Preparing headers. Enforcing GitHub App authentication.');
 
   if (session.installationId) {
-    token = await getInstallationAccessToken(session.installationId);
-  }
+    console.log(`getGitHubHeaders: Found installationId: ${session.installationId}. Will use installation token.`);
+    const token = await getInstallationAccessToken(session.installationId);
+    
+    if (!token) {
+      console.error('getGitHubHeaders: Could not obtain installation access token.');
+      throw new GitHubAPIError('Unauthorized: Could not obtain installation access token.', 401);
+    }
 
-  if (!token) {
-    throw new GitHubAPIError('Unauthorized: No access token found.', 401);
+    return {
+      'Authorization': `token ${token}`,
+      'Accept': 'application/vnd.github.v3+json',
+    };
+  } else {
+    console.error('getGitHubHeaders: No installationId found. Cannot authenticate as GitHub App.');
+    throw new GitHubAPIError('Unauthorized: This application requires installation as a GitHub App.', 401);
   }
-
-  return {
-    'Authorization': `token ${token}`,
-    'Accept': 'application/vnd.github.v3+json',
-  };
 }
 
 /**
