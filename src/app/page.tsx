@@ -3,10 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSession, signIn, signOut } from 'next-auth/react';
-import getConfig from 'next/config';
 
-const { publicRuntimeConfig } = getConfig();
-const API_BASE_URL = publicRuntimeConfig.API_BASE_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 /**
  * Represents an article from esa.io.
