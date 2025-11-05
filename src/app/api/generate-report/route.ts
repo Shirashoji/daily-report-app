@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/genai';
+import { GoogleGenAI } from '@google/genai';
 import fs from 'fs';
 import path from 'path';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 interface WorkTime {
   start: string;
@@ -20,7 +20,7 @@ async function generateReportFromCommits(
   customVariables: Record<string, string> = {},
   lastMeetingContent?: string
 ): Promise<string> {
-  const model = genAI.getGenerativeModel({ model: `models/${modelName}` });
+  // const model = genAI.getGenerativeModel({ model: `models/${modelName}` });
 
   // reportTypeに応じてテンプレートファイルを読み込む
   const templateFileName = reportType === 'meeting' ? 'meeting-template.md' : 'daily-template.md';
@@ -203,10 +203,12 @@ ${commits}
 # 生成される日報`;
   }
 
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  const text = response.text();
-  return text;
+  const result = await genAI.models.generateContent({
+    model: `models/${modelName}`,
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+  });
+  const text = result.text;
+  return text || '';
 }
 
 export async function POST(request: Request) {
