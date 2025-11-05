@@ -15,6 +15,7 @@ if (!process.env.AUTH_SECRET) {
 
 const nextAuthOptions = {
   secret: process.env.AUTH_SECRET,
+  trustHost: true,
   providers: [
     GitHub({
       clientId: process.env.AUTH_GITHUB_ID,
@@ -80,22 +81,5 @@ const nextAuthOptions = {
 
 export const { handlers, signIn, signOut, auth } = NextAuth(nextAuthOptions);
 
-// Custom error handling for GET and POST handlers
-const withErrorHandling = (handler) => {
-  return async (req, res) => {
-    try {
-      return await handler(req, res);
-    } catch (error) {
-      console.error("NextAuth.js API Route Error:", error);
-      return new Response(JSON.stringify({ error: error.message || "An unexpected error occurred" }), {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-    }
-  };
-};
-
-export const GET = withErrorHandling(handlers.GET);
-export const POST = withErrorHandling(handlers.POST);
+export const GET = handlers.GET;
+export const POST = handlers.POST;

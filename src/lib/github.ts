@@ -52,6 +52,10 @@ async function getInstallationAccessToken(installationId: string) {
   );
 
   const data = await response.json();
+  if (!response.ok) {
+    console.error('getInstallationAccessToken: Failed to get access token', response.status, data);
+    throw new GitHubAPIError(data.message || 'Failed to get installation access token', response.status);
+  }
   return data.token;
 }
 
@@ -99,15 +103,24 @@ async function getGitHubHeaders() {
 export async function fetchFromGitHub(url: string) {
   try {
     const headers = await getGitHubHeaders();
+    console.error('fetchFromGitHub: Attempting to fetch from URL:', url, 'with headers:', headers);
     const response = await fetch(url, { headers });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new GitHubAPIError(errorData.message || 'Failed to fetch from GitHub', response.status);
+      const errorText = await response.text();
+      console.error(`fetchFromGitHub: Request failed with status ${response.status}. Response: ${errorText}`);
+      let errorData: any = {};
+      try {
+        errorData = JSON.parse(errorText);
+      } catch (e) {
+        // Not JSON, use raw text
+      }
+      throw new GitHubAPIError(errorData.message || errorText || 'Failed to fetch from GitHub', response.status);
     }
 
     return response;
   } catch (error) {
+    console.error('fetchFromGitHub: Caught an error:', error);
     if (error instanceof GitHubAPIError) {
       throw error; // Re-throw custom error
     }
