@@ -216,6 +216,28 @@ export default function Home() {
         setGithubRepo(savedGithubRepo);
       }
 
+      // localStorageからworkTimesを読み込む
+      const savedWorkTimesJson = localStorage.getItem('workTimes');
+      if (savedWorkTimesJson) {
+        try {
+          const parsedWorkTimes = JSON.parse(savedWorkTimesJson).map((wt: { start: string; end: string | null; memo: string }) => ({
+            start: new Date(wt.start),
+            end: wt.end ? new Date(wt.end) : null,
+            memo: wt.memo || '',
+          }));
+          setWorkTimes(parsedWorkTimes);
+          const lastWorkTime = parsedWorkTimes[parsedWorkTimes.length - 1];
+          if (lastWorkTime && lastWorkTime.end === null) {
+            setIsWorking(true);
+          }
+          return; // localStorageから読み込めたらIndexedDBは読み込まない
+        } catch (error) {
+          console.error("Error parsing workTimes from localStorage:", error);
+          // パースエラーの場合はIndexedDBから読み込みを試みる
+        }
+      }
+
+      // localStorageにない場合、IndexedDBから読み込む
       try {
         const savedWorkTimes = await getFromIndexedDB<any[]>('workTimes');
         if (savedWorkTimes) {
@@ -243,9 +265,12 @@ export default function Home() {
   useEffect(() => {
     const saveWorkTimes = async () => {
       try {
+        // localStorageに保存
+        localStorage.setItem('workTimes', JSON.stringify(workTimes));
+        // IndexedDBに保存（バックアップ）
         await setToIndexedDB('workTimes', workTimes);
       } catch (error) {
-        console.error("Error saving workTimes to IndexedDB:", error);
+        console.error("Error saving workTimes:", error);
       }
     };
     saveWorkTimes();
