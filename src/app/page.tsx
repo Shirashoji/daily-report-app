@@ -24,9 +24,9 @@ interface EsaArticle {
  * @returns {string} The formatted date string.
  */
 const formatDate = (date: Date) => {
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
+  const year = date.getUTCFullYear();
+  const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+  const day = date.getUTCDate().toString().padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
 
@@ -37,14 +37,15 @@ const formatDate = (date: Date) => {
  */
 const getDatesInWeek = (date: Date) => {
   const startOfWeek = new Date(date);
-  startOfWeek.setDate(date.getDate() - (date.getDay() === 0 ? 6 : date.getDay() - 1)); // Monday
-  startOfWeek.setHours(0, 0, 0, 0);
+  // UTCベースで曜日を計算し、月曜日に合わせる
+  startOfWeek.setUTCDate(date.getUTCDate() - (date.getUTCDay() === 0 ? 6 : date.getUTCDay() - 1)); // Monday (UTC)
+  startOfWeek.setUTCHours(0, 0, 0, 0); // UTCの午前0時に設定
 
   const dates = [];
   for (let i = 0; i < 7; i++) {
     const d = new Date(startOfWeek);
-    d.setDate(startOfWeek.getDate() + i);
-    dates.push(formatDate(d));
+    d.setUTCDate(startOfWeek.getUTCDate() + i); // UTCベースで日付を進める
+    dates.push(formatDate(d)); // UTCベースのformatDateを使用
   }
   return dates;
 };
@@ -568,12 +569,7 @@ export default function Home() {
               <ul className="space-y-2">
                 {workTimes
                   .map((wt, _index) => ({ ...wt, originalIndex: _index })) // 元のインデックスを保持
-                  .filter(wt => {
-                    const wtDate = formatDate(wt.start);
-                    const targetFormattedDate = formatDate(targetDate);
-                    console.log(`Filtering: wt.start=${wt.start}, wtDate=${wtDate}, targetDate=${targetDate}, targetFormattedDate=${targetFormattedDate}, match=${wtDate === targetFormattedDate}`);
-                    return wtDate === targetFormattedDate;
-                  })
+                  .filter(wt => formatDate(wt.start) === formatDate(targetDate))
                   .map((wt) => (
                     <li key={wt.originalIndex} className="p-3 bg-gray-100 rounded-md">
                       <div className="flex items-center justify-between mb-2">
@@ -739,7 +735,11 @@ export default function Home() {
             type="date" 
             id="date-select"
             value={formatDate(targetDate)}
-            onChange={(e) => setTargetDate(new Date(e.target.value))}
+            onChange={(e) => {
+              const dateString = e.target.value;
+              const utcDate = new Date(dateString + 'T00:00:00.000Z');
+              setTargetDate(utcDate);
+            }}
             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
           />
         </div>
