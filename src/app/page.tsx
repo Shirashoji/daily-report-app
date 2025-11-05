@@ -218,6 +218,7 @@ export default function Home() {
 
       // localStorageからworkTimesを読み込む
       const savedWorkTimesJson = localStorage.getItem('workTimes');
+      console.log("localStorage - savedWorkTimesJson:", savedWorkTimesJson);
       if (savedWorkTimesJson) {
         try {
           const parsedWorkTimes = JSON.parse(savedWorkTimesJson).map((wt: { start: string; end: string | null; memo: string }) => ({
@@ -225,11 +226,13 @@ export default function Home() {
             end: wt.end ? new Date(wt.end) : null,
             memo: wt.memo || '',
           }));
+          console.log("localStorage - parsedWorkTimes:", parsedWorkTimes);
           setWorkTimes(parsedWorkTimes);
           const lastWorkTime = parsedWorkTimes[parsedWorkTimes.length - 1];
           if (lastWorkTime && lastWorkTime.end === null) {
             setIsWorking(true);
           }
+          console.log("workTimes loaded from localStorage.");
           return; // localStorageから読み込めたらIndexedDBは読み込まない
         } catch (error) {
           console.error("Error parsing workTimes from localStorage:", error);
@@ -238,8 +241,10 @@ export default function Home() {
       }
 
       // localStorageにない場合、IndexedDBから読み込む
+      console.log("Attempting to load workTimes from IndexedDB...");
       try {
         const savedWorkTimes = await getFromIndexedDB<any[]>('workTimes');
+        console.log("IndexedDB - savedWorkTimes:", savedWorkTimes);
         if (savedWorkTimes) {
           const parsedWorkTimes = savedWorkTimes.map((wt: { start: string; end: string | null; memo: string }) => ({
             start: new Date(wt.start),
@@ -252,6 +257,7 @@ export default function Home() {
           if (lastWorkTime && lastWorkTime.end === null) {
             setIsWorking(true);
           }
+          console.log("workTimes loaded from IndexedDB.");
         }
       } catch (error) {
         console.error("Error loading workTimes from IndexedDB:", error);
@@ -447,9 +453,11 @@ export default function Home() {
     let customVariables: { [key: string]: any } = {};
     // localStorageからcustomVariablesを読み込む
     const savedCustomVarsJson = localStorage.getItem('customVariables');
+    console.log("localStorage - savedCustomVarsJson (customVariables):", savedCustomVarsJson);
     if (savedCustomVarsJson) {
       try {
         customVariables = JSON.parse(savedCustomVarsJson);
+        console.log("localStorage - customVariables loaded:", customVariables);
       } catch (error) {
         console.error("Error parsing customVariables from localStorage:", error);
         // パースエラーの場合はIndexedDBから読み込みを試みる
@@ -458,10 +466,13 @@ export default function Home() {
 
     // localStorageにない場合、IndexedDBから読み込む（バックアップ）
     if (Object.keys(customVariables).length === 0) {
+      console.log("Attempting to load customVariables from IndexedDB...");
       try {
         const savedCustomVars = await getFromIndexedDB<{ [key: string]: any }>('customVariables');
+        console.log("IndexedDB - savedCustomVars (customVariables):", savedCustomVars);
         if (savedCustomVars) {
           customVariables = savedCustomVars;
+          console.log("customVariables loaded from IndexedDB.");
         }
       } catch (error) {
         console.error("Error loading customVariables from IndexedDB:", error);
