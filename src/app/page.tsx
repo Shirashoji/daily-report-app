@@ -445,14 +445,28 @@ export default function Home() {
     setGeneratedText(generatingText);
 
     let customVariables: { [key: string]: any } = {};
-    try {
-      const savedCustomVars = await getFromIndexedDB<{ [key: string]: any }>('customVariables');
-      if (savedCustomVars) {
-        customVariables = savedCustomVars;
+    // localStorageからcustomVariablesを読み込む
+    const savedCustomVarsJson = localStorage.getItem('customVariables');
+    if (savedCustomVarsJson) {
+      try {
+        customVariables = JSON.parse(savedCustomVarsJson);
+      } catch (error) {
+        console.error("Error parsing customVariables from localStorage:", error);
+        // パースエラーの場合はIndexedDBから読み込みを試みる
       }
-    } catch (error) {
-      console.error("Error loading customVariables from IndexedDB:", error);
-      customVariables = {};
+    }
+
+    // localStorageにない場合、IndexedDBから読み込む（バックアップ）
+    if (Object.keys(customVariables).length === 0) {
+      try {
+        const savedCustomVars = await getFromIndexedDB<{ [key: string]: any }>('customVariables');
+        if (savedCustomVars) {
+          customVariables = savedCustomVars;
+        }
+      } catch (error) {
+        console.error("Error loading customVariables from IndexedDB:", error);
+        customVariables = {};
+      }
     }
 
     let lastMeetingContent = '';

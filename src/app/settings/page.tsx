@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { getFromIndexedDB, setToIndexedDB } from '@/lib/indexeddb';
 
 /**
  * A page where users can configure their settings for various services.
@@ -26,17 +27,42 @@ export default function SettingsPage() {
     const savedEsaKey = localStorage.getItem('esaApiKey');
     if (savedEsaKey) setEsaApiKey(savedEsaKey);
 
-    const savedCustomVars = localStorage.getItem('customVariables');
-    if (savedCustomVars) {
-      setCustomVariables(JSON.parse(savedCustomVars));
-    }
+    const loadCustomVariables = async () => {
+      // localStorageからcustomVariablesを読み込む
+      const savedCustomVarsJson = localStorage.getItem('customVariables');
+      if (savedCustomVarsJson) {
+        try {
+          setCustomVariables(JSON.parse(savedCustomVarsJson));
+          return; // localStorageから読み込めたらIndexedDBは読み込まない
+        } catch (error) {
+          console.error("Error parsing customVariables from localStorage:", error);
+          // パースエラーの場合はIndexedDBから読み込みを試みる
+        }
+      }
+
+      // localStorageにない場合、IndexedDBから読み込む
+      try {
+        const savedCustomVars = await getFromIndexedDB<Record<string, string>>('customVariables');
+        if (savedCustomVars) {
+          setCustomVariables(savedCustomVars);
+        }
+      } catch (error) {
+        console.error("Error loading customVariables from IndexedDB:", error);
+      }
+    };
+    loadCustomVariables();
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     localStorage.setItem('geminiApiKey', geminiApiKey);
     localStorage.setItem('esaTeam', esaTeam);
     localStorage.setItem('esaApiKey', esaApiKey);
     localStorage.setItem('customVariables', JSON.stringify(customVariables));
+    try {
+      await setToIndexedDB('customVariables', customVariables);
+    } catch (error) {
+      console.error("Error saving customVariables to IndexedDB:", error);
+    }
     setMessage('設定を保存しました。');
     setTimeout(() => setMessage(''), 3000);
   };
