@@ -36,16 +36,20 @@ const formatDate = (date: Date) => {
  * @returns {string[]} An array of formatted date strings (YYYY-MM-DD) for the week.
  */
 const getDatesInWeek = (date: Date) => {
-  const startOfWeek = new Date(date);
-  // UTCベースで曜日を計算し、月曜日に合わせる
-  startOfWeek.setUTCDate(date.getUTCDate() - (date.getUTCDay() === 0 ? 6 : date.getUTCDay() - 1)); // Monday (UTC)
-  startOfWeek.setUTCHours(0, 0, 0, 0); // UTCの午前0時に設定
+  const jstOffsetMs = 9 * 60 * 60 * 1000;
+  const targetJstDate = new Date(date.getTime() + jstOffsetMs); // targetDateをJSTに変換
+
+  const startOfWeekJst = new Date(targetJstDate);
+  // JSTでの曜日を計算し、月曜日に合わせる (0:日曜, 1:月曜, ..., 6:土曜)
+  startOfWeekJst.setUTCDate(targetJstDate.getUTCDate() - (targetJstDate.getUTCDay() === 0 ? 6 : targetJstDate.getUTCDay() - 1));
+  startOfWeekJst.setUTCHours(0, 0, 0, 0); // JSTの午前0時に設定
 
   const dates = [];
   for (let i = 0; i < 7; i++) {
-    const d = new Date(startOfWeek);
-    d.setUTCDate(startOfWeek.getUTCDate() + i); // UTCベースで日付を進める
-    dates.push(formatDate(d)); // UTCベースのformatDateを使用
+    const d = new Date(startOfWeekJst);
+    d.setUTCDate(startOfWeekJst.getUTCDate() + i);
+    // dはJSTの午前0時を表すDateオブジェクトなので、formatDateでUTCベースに変換するとJSTの日付が取得できる
+    dates.push(formatDate(d));
   }
   return dates;
 };
@@ -68,6 +72,35 @@ const groupWorkTimesByDay = (workTimes: { start: Date; end: Date | null; memo: s
     grouped[date].push(wt);
   });
   return grouped;
+};
+
+/**
+ * 指定されたUTC DateオブジェクトがJSTで何月何日であるかを基準に、
+ * そのJSTの日付の00:00:00と23:59:59.999をUTCで返す。
+ * @param {Date} utcDate - 基準となるUTC Dateオブジェクト
+ * @returns {{ startOfDayJST_UTC: Date, endOfDayJST_UTC: Date }}
+ */
+const getJstDayBoundariesInUtc = (utcDate: Date) => {
+  // JSTのオフセット（+9時間）をミリ秒で取得
+  const jstOffsetMs = 9 * 60 * 60 * 1000;
+
+  // 基準となるUTC DateオブジェクトをJSTに変換したときのタイムスタンプ
+  const utcTimestamp = utcDate.getTime();
+  const jstTimestamp = utcTimestamp + jstOffsetMs;
+
+  // JSTでの年、月、日を取得
+  const jstDate = new Date(jstTimestamp);
+  const jstYear = jstDate.getUTCFullYear();
+  const jstMonth = jstDate.getUTCMonth();
+  const jstDay = jstDate.getUTCDate();
+
+  // JSTのその日の00:00:00をUTCで計算
+  const startOfDayJST_UTC = new Date(Date.UTC(jstYear, jstMonth, jstDay, 0, 0, 0));
+
+  // JSTのその日の23:59:59.999をUTCで計算
+  const endOfDayJST_UTC = new Date(Date.UTC(jstYear, jstMonth, jstDay, 23, 59, 59, 999));
+
+  return { startOfDayJST_UTC, endOfDayJST_UTC };
 };
 
 /**
@@ -569,7 +602,13 @@ export default function Home() {
               <ul className="space-y-2">
                 {workTimes
                   .map((wt, _index) => ({ ...wt, originalIndex: _index })) // 元のインデックスを保持
-                  .filter(wt => formatDate(wt.start) === formatDate(targetDate))
+                  .filter(wt => {
+                    const wtStart = new Date(wt.start); // workTimesのstart時刻 (UTC)
+                    const { startOfDayJST_UTC, endOfDayJST_UTC } = getJstDayBoundariesInUtc(targetDate);
+
+                    // workTimesのstart時刻が、targetDateがJSTで示す日の00:00:00から23:59:59.999の範囲内にあるか
+                    return wtStart >= startOfDayJST_UTC && wtStart <= endOfDayJST_UTC;
+                  })
                   .map((wt) => (
                     <li key={wt.originalIndex} className="p-3 bg-gray-100 rounded-md">
                       <div className="flex items-center justify-between mb-2">
