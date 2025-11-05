@@ -5,9 +5,6 @@ interface GitHubBranch {
   name: string;
 }
 
-interface GitHubRepo {
-  private: boolean;
-}
 
 export async function POST(request: Request) {
   console.log('github-branches API: Request received.');

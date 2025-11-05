@@ -25,9 +25,6 @@ interface GitHubBranch {
   protected: boolean;
 }
 
-interface GitHubRepo {
-  private: boolean;
-}
 
 const getJstDateRange = (dateString?: string | null, reportType?: string | null) => {
   const jstOffset = 9 * 60 * 60 * 1000; // 9 hours in milliseconds

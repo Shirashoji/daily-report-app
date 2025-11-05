@@ -1,6 +1,9 @@
 // src/app/api/auth/[...nextauth]/route.ts
-import NextAuth from "next-auth"
+import NextAuth from "next-auth";
+import type { NextAuthConfig } from "next-auth";
 import GitHub from "next-auth/providers/github";
+import type { JWT } from "next-auth/jwt";
+import type { Account, Session } from "next-auth";
 
 // Check for required environment variables
 if (!process.env.AUTH_GITHUB_ID) {
@@ -13,7 +16,7 @@ if (!process.env.AUTH_SECRET) {
   throw new Error("Missing AUTH_SECRET environment variable");
 }
 
-const nextAuthOptions = {
+const nextAuthOptions: NextAuthConfig = {
   secret: process.env.AUTH_SECRET,
   trustHost: true,
   providers: [
@@ -32,7 +35,7 @@ const nextAuthOptions = {
      * @returns {object} The token with the access_token and installationId.
      * @see https://next-auth.js.org/configuration/callbacks#jwt-callback
      */
-    async jwt({ token, account }) {
+    async jwt({ token, account }: { token: JWT; account?: Account | null | undefined }) {
       if (account) {
         token.accessToken = account.access_token as string;
 
@@ -68,7 +71,7 @@ const nextAuthOptions = {
       return token;
     },
 
-    async session({ session, token }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       if (token.error) {
         session.error = token.error as string;
       }

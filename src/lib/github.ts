@@ -109,13 +109,13 @@ export async function fetchFromGitHub(url: string) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`fetchFromGitHub: Request failed with status ${response.status}. Response: ${errorText}`);
-      let errorData: any = {};
+      let errorData: Record<string, unknown> = {};
       try {
         errorData = JSON.parse(errorText);
       } catch (e) {
-        // Not JSON, use raw text
+        console.error("Error parsing error response:", e);
       }
-      throw new GitHubAPIError(errorData.message || errorText || 'Failed to fetch from GitHub', response.status);
+      throw new GitHubAPIError(String(errorData.message || errorText || 'Failed to fetch from GitHub'), response.status);
     }
 
     return response;

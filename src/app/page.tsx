@@ -451,7 +451,7 @@ export default function Home() {
     const generatingText = reportType === 'daily' ? "日報生成中..." : "MTG資料生成中...";
     setGeneratedText(generatingText);
 
-    let customVariables: { [key: string]: any } = {};
+    let customVariables: Record<string, string> = {};
     const savedCustomVarsJson = localStorage.getItem('customVariables');
     if (savedCustomVarsJson) {
       try {
