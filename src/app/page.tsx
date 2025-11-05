@@ -3,6 +3,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSession, signIn, signOut } from 'next-auth/react';
+import getConfig from 'next/config';
+
+const { publicRuntimeConfig } = getConfig();
+const API_BASE_URL = publicRuntimeConfig.API_BASE_URL;
 
 /**
  * Represents an article from esa.io.
@@ -252,7 +256,7 @@ export default function Home() {
     const fetchBranches = async () => {
       if (githubOwner && githubRepo && session) {
         try {
-          const response = await fetch('/api/get-branches', {
+          const response = await fetch(`${API_BASE_URL}/api/get-branches`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ owner: githubOwner, repo: githubRepo, includePrivate: true }),
@@ -284,7 +288,7 @@ export default function Home() {
           return;
         }
 
-        const response = await fetch('/api/get-commits', {
+        const response = await fetch(`${API_BASE_URL}/api/get-commits`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -315,7 +319,7 @@ export default function Home() {
     setIsLoadingEsa(true);
     setEsaArticles([]);
     try {
-      const response = await fetch(`/api/get-past-reports?user=${esaUser}`);
+      const response = await fetch(`${API_BASE_URL}/api/get-past-reports?user=${esaUser}`);
       const data = await response.json();
       if (data.reports) {
         setEsaArticles(data.reports);
@@ -351,7 +355,7 @@ export default function Home() {
         const dateString = formatDate(lastWeek);
 
         try {
-          const res = await fetch('/api/get-past-reports', {
+          const res = await fetch(`${API_BASE_URL}/api/get-past-reports`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -393,7 +397,7 @@ export default function Home() {
       try {
         const team = localStorage.getItem('esaTeam');
         const apiKey = localStorage.getItem('esaApiKey');
-        const res = await fetch('/api/get-esa-article', {
+        const res = await fetch(`${API_BASE_URL}/api/get-esa-article`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url: lastMeetingUrl, team, apiKey }),
@@ -412,7 +416,7 @@ export default function Home() {
     }
 
     try {
-      const response = await fetch('/api/generate-report', {
+      const response = await fetch(`${API_BASE_URL}/api/generate-report`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -452,15 +456,15 @@ export default function Home() {
     setAdvice('アドバイスを生成中...');
     try {
       const [templateRes, pastReportsRes] = await Promise.all([
-        fetch('/daily-template.md'),
-        fetch(`/api/get-past-reports?user=${esaUser}`),
+        fetch(`${API_BASE_URL}/daily-template.md`),
+        fetch(`${API_BASE_URL}/api/get-past-reports?user=${esaUser}`),
       ]);
 
       const template = await templateRes.text();
       const { reports: pastReports } = await pastReportsRes.json();
       const reportBodies = pastReports.map((r: EsaArticle) => r.body_md);
 
-      const adviceRes = await fetch('/api/generate-advice', {
+      const adviceRes = await fetch(`${API_BASE_URL}/api/generate-advice`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
