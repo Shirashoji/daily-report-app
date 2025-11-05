@@ -13,7 +13,7 @@ if (!process.env.AUTH_SECRET) {
   throw new Error("Missing AUTH_SECRET environment variable");
 }
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+const nextAuthOptions = {
   secret: process.env.AUTH_SECRET,
   providers: [
     GitHub({
@@ -77,6 +77,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
   },
-})
+};
 
-export const { GET, POST } = handlers
+export const { handlers, signIn, signOut, auth } = NextAuth(nextAuthOptions);
+
+// Custom error handling for GET and POST handlers
+const withErrorHandling = (handler) => {
+  return async (req, res) => {
+    try {
+      return await handler(req, res);
+    } catch (error) {
+      console.error("NextAuth.js API Route Error:", error);
+      return new Response(JSON.stringify({ error: error.message || "An unexpected error occurred" }), {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    }
+  };
+};
+
+export const GET = withErrorHandling(handlers.GET);
+export const POST = withErrorHandling(handlers.POST);
