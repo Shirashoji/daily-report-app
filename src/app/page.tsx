@@ -568,7 +568,12 @@ export default function Home() {
               <ul className="space-y-2">
                 {workTimes
                   .map((wt, _index) => ({ ...wt, originalIndex: _index })) // 元のインデックスを保持
-                  .filter(wt => formatDate(wt.start) === formatDate(targetDate))
+                  .filter(wt => {
+                    const wtDate = formatDate(wt.start);
+                    const targetFormattedDate = formatDate(targetDate);
+                    console.log(`Filtering: wt.start=${wt.start}, wtDate=${wtDate}, targetDate=${targetDate}, targetFormattedDate=${targetFormattedDate}, match=${wtDate === targetFormattedDate}`);
+                    return wtDate === targetFormattedDate;
+                  })
                   .map((wt) => (
                     <li key={wt.originalIndex} className="p-3 bg-gray-100 rounded-md">
                       <div className="flex items-center justify-between mb-2">
