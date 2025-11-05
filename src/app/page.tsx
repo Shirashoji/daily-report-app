@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSession, signIn, signOut } from 'next-auth/react';
-import { getFromIndexedDB, setToIndexedDB } from '@/lib/indexeddb';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -216,9 +215,7 @@ export default function Home() {
         setGithubRepo(savedGithubRepo);
       }
 
-      // localStorageからworkTimesを読み込む
       const savedWorkTimesJson = localStorage.getItem('workTimes');
-      console.log("localStorage - savedWorkTimesJson:", savedWorkTimesJson);
       if (savedWorkTimesJson) {
         try {
           const parsedWorkTimes = JSON.parse(savedWorkTimesJson).map((wt: { start: string; end: string | null; memo: string }) => ({
@@ -226,42 +223,15 @@ export default function Home() {
             end: wt.end ? new Date(wt.end) : null,
             memo: wt.memo || '',
           }));
-          console.log("localStorage - parsedWorkTimes:", parsedWorkTimes);
           setWorkTimes(parsedWorkTimes);
           const lastWorkTime = parsedWorkTimes[parsedWorkTimes.length - 1];
           if (lastWorkTime && lastWorkTime.end === null) {
             setIsWorking(true);
           }
-          console.log("workTimes loaded from localStorage.");
-          return; // localStorageから読み込めたらIndexedDBは読み込まない
         } catch (error) {
           console.error("Error parsing workTimes from localStorage:", error);
-          // パースエラーの場合はIndexedDBから読み込みを試みる
+          setWorkTimes([]);
         }
-      }
-
-      // localStorageにない場合、IndexedDBから読み込む
-      console.log("Attempting to load workTimes from IndexedDB...");
-      try {
-        const savedWorkTimes = await getFromIndexedDB<any[]>('workTimes');
-        console.log("IndexedDB - savedWorkTimes:", savedWorkTimes);
-        if (savedWorkTimes) {
-          const parsedWorkTimes = savedWorkTimes.map((wt: { start: string; end: string | null; memo: string }) => ({
-            start: new Date(wt.start),
-            end: wt.end ? new Date(wt.end) : null,
-            memo: wt.memo || '',
-          }));
-          setWorkTimes(parsedWorkTimes);
-
-          const lastWorkTime = parsedWorkTimes[parsedWorkTimes.length - 1];
-          if (lastWorkTime && lastWorkTime.end === null) {
-            setIsWorking(true);
-          }
-          console.log("workTimes loaded from IndexedDB.");
-        }
-      } catch (error) {
-        console.error("Error loading workTimes from IndexedDB:", error);
-        setWorkTimes([]);
       }
     };
     loadData();
@@ -269,14 +239,11 @@ export default function Home() {
 
   // workTimesが変更されたらIndexedDBに保存
   useEffect(() => {
-    const saveWorkTimes = async () => {
+    const saveWorkTimes = () => {
       try {
-        // localStorageに保存
         localStorage.setItem('workTimes', JSON.stringify(workTimes));
-        // IndexedDBに保存（バックアップ）
-        await setToIndexedDB('workTimes', workTimes);
       } catch (error) {
-        console.error("Error saving workTimes:", error);
+        console.error("Error saving workTimes to localStorage:", error);
       }
     };
     saveWorkTimes();
@@ -451,32 +418,12 @@ export default function Home() {
     setGeneratedText(generatingText);
 
     let customVariables: { [key: string]: any } = {};
-    // localStorageからcustomVariablesを読み込む
     const savedCustomVarsJson = localStorage.getItem('customVariables');
-    console.log("localStorage - savedCustomVarsJson (customVariables):", savedCustomVarsJson);
     if (savedCustomVarsJson) {
       try {
         customVariables = JSON.parse(savedCustomVarsJson);
-        console.log("localStorage - customVariables loaded:", customVariables);
       } catch (error) {
         console.error("Error parsing customVariables from localStorage:", error);
-        // パースエラーの場合はIndexedDBから読み込みを試みる
-      }
-    }
-
-    // localStorageにない場合、IndexedDBから読み込む（バックアップ）
-    if (Object.keys(customVariables).length === 0) {
-      console.log("Attempting to load customVariables from IndexedDB...");
-      try {
-        const savedCustomVars = await getFromIndexedDB<{ [key: string]: any }>('customVariables');
-        console.log("IndexedDB - savedCustomVars (customVariables):", savedCustomVars);
-        if (savedCustomVars) {
-          customVariables = savedCustomVars;
-          console.log("customVariables loaded from IndexedDB.");
-        }
-      } catch (error) {
-        console.error("Error loading customVariables from IndexedDB:", error);
-        customVariables = {};
       }
     }
 
