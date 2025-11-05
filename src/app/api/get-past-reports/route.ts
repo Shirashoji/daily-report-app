@@ -32,9 +32,16 @@ export async function GET(request: Request) {
     const response = await fetch(url, { headers });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Failed to fetch from esa.io:', errorData);
-      return NextResponse.json({ error: 'Failed to fetch from esa.io', details: errorData }, { status: response.status });
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const errorData = await response.json();
+        console.error('Failed to fetch from esa.io:', errorData);
+        return NextResponse.json({ error: 'Failed to fetch from esa.io', details: errorData }, { status: response.status });
+      } else {
+        const errorText = await response.text();
+        console.error('Failed to fetch from esa.io (non-JSON response):', errorText);
+        return NextResponse.json({ error: 'Failed to fetch from esa.io', details: errorText }, { status: response.status });
+      }
     }
 
     const data = await response.json();
@@ -80,9 +87,16 @@ export async function POST(request: Request) {
     const response = await fetch(url, { headers });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Failed to fetch from esa.io:', errorData);
-      return NextResponse.json({ error: 'Failed to fetch from esa.io', details: errorData }, { status: response.status });
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const errorData = await response.json();
+        console.error('Failed to fetch from esa.io:', errorData);
+        return NextResponse.json({ error: 'Failed to fetch from esa.io', details: errorData }, { status: response.status });
+      } else {
+        const errorText = await response.text();
+        console.error('Failed to fetch from esa.io (non-JSON response):', errorText);
+        return NextResponse.json({ error: 'Failed to fetch from esa.io', details: errorText }, { status: response.status });
+      }
     }
 
     const data = await response.json();
