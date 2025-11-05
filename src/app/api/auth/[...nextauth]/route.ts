@@ -43,13 +43,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           },
         });
 
-        if (res.ok) {
-          const installations = await res.json();
-          // For this example, we'll just use the first installation.
-          // In a real-world application, you might want to let the user choose which installation to use.
-          // This could be a problem if the user has multiple installations.
-          if (installations.total_count > 0) {
-            token.installationId = installations.installations[0].id;
+        if (!res.ok) {
+          console.error(
+            `Failed to fetch GitHub installations: ${res.status} ${res.statusText}`
+          );
+          // Optionally, you might want to throw an error here or set a specific error status in the token
+          // For now, we'll just proceed without installationId
+        } else {
+          try {
+            const installations = await res.json();
+            if (installations.total_count > 0) {
+              token.installationId = installations.installations[0].id;
+            }
+          } catch (error) {
+            console.error("Error parsing GitHub installations response:", error);
           }
         }
       }
