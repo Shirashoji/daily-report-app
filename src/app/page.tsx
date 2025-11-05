@@ -210,17 +210,23 @@ export default function Home() {
 
     const savedWorkTimes = localStorage.getItem('workTimes');
     if (savedWorkTimes) {
-      const parsedWorkTimes = JSON.parse(savedWorkTimes).map((wt: { start: string; end: string | null; memo: string }) => ({
-        start: new Date(wt.start),
-        end: wt.end ? new Date(wt.end) : null,
-        memo: wt.memo || '',
-      }));
-      setWorkTimes(parsedWorkTimes);
+      try {
+        const parsedWorkTimes = JSON.parse(savedWorkTimes).map((wt: { start: string; end: string | null; memo: string }) => ({
+          start: new Date(wt.start),
+          end: wt.end ? new Date(wt.end) : null,
+          memo: wt.memo || '',
+        }));
+        setWorkTimes(parsedWorkTimes);
 
-      // 作業中かどうかを判定
-      const lastWorkTime = parsedWorkTimes[parsedWorkTimes.length - 1];
-      if (lastWorkTime && lastWorkTime.end === null) {
-        setIsWorking(true);
+        // 作業中かどうかを判定
+        const lastWorkTime = parsedWorkTimes[parsedWorkTimes.length - 1];
+        if (lastWorkTime && lastWorkTime.end === null) {
+          setIsWorking(true);
+        }
+      } catch (error) {
+        console.error("Error parsing workTimes from localStorage:", error);
+        // エラーが発生した場合はworkTimesを初期化
+        setWorkTimes([]);
       }
     }
   }, []);
@@ -390,7 +396,16 @@ export default function Home() {
     setGeneratedText(generatingText);
 
     const savedCustomVars = localStorage.getItem('customVariables');
-    const customVariables = savedCustomVars ? JSON.parse(savedCustomVars) : {};
+    let customVariables = {};
+    if (savedCustomVars) {
+      try {
+        customVariables = JSON.parse(savedCustomVars);
+      } catch (error) {
+        console.error("Error parsing customVariables from localStorage:", error);
+        // エラーが発生した場合はcustomVariablesを初期化
+        customVariables = {};
+      }
+    }
 
     let lastMeetingContent = '';
     if (reportType === 'meeting' && lastMeetingUrl) {
