@@ -6,14 +6,11 @@
     "dev": "next dev -p 80",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint",
-    "genkit:dev": "genkit start -- npm run dev"
+    "lint": "eslint"
   },
   "dependencies": {
-    "@genkit-ai/google-genai": "^1.22.0",
     "@google/genai": "^1.29.0",
     "@types/jsonwebtoken": "^9.0.10",
-    "genkit": "^1.22.0",
     "jsonwebtoken": "^9.0.2",
     "next": "15.5.4",
     "next-auth": "^5.0.0-beta.29",
