@@ -16,7 +16,8 @@ async function generateReportFromCommits(
   modelName: string = "gemini-pro",
   reportType: string,
   workTimes: WorkTime[],
-  targetDateStr: string,
+  startDateStr: string,
+  endDateStr: string,
   customVariables: Record<string, string> = {},
   lastMeetingContent?: string,
 ): Promise<string> {
@@ -25,10 +26,11 @@ async function generateReportFromCommits(
   const templatePath = path.join(process.cwd(), "public", templateFileName);
   let template = fs.readFileSync(templatePath, "utf-8");
 
-  const targetDate = new Date(targetDateStr);
+  const startDate = new Date(startDateStr);
+  const endDate = new Date(endDateStr);
 
-  template = replaceTemplateVariables(template, targetDate, customVariables);
-  const workTimeText = generateWorkTimeText(workTimes, reportType);
+  template = replaceTemplateVariables(template, startDate, endDate, customVariables);
+  const workTimeText = generateWorkTimeText(workTimes, reportType, startDate, endDate);
   const prompt = createPrompt(
     reportType,
     template,
@@ -51,7 +53,8 @@ export async function POST(request: Request) {
     model,
     reportType,
     workTimes,
-    targetDate,
+    startDate,
+    endDate,
     customVariables,
     lastMeetingContent,
   } = await request.json();
@@ -62,7 +65,8 @@ export async function POST(request: Request) {
       model,
       reportType,
       workTimes,
-      targetDate,
+      startDate,
+      endDate,
       customVariables,
       lastMeetingContent,
     );

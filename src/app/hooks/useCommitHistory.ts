@@ -8,7 +8,8 @@ export function useCommitHistory(
   owner: string,
   repo: string,
   branch: string,
-  date: Date,
+  startDate: Date,
+  endDate: Date,
   reportType: string
 ) {
   const [commitHistory, setCommitHistory] = useState('コミット履歴を読み込み中...');
@@ -17,7 +18,8 @@ export function useCommitHistory(
     const fetchCommits = async () => {
       setCommitHistory(`コミット履歴を読み込み中...`);
       try {
-        const dateString = formatDate(date);
+        const startDateString = formatDate(startDate);
+        const endDateString = formatDate(endDate);
         if (!owner || !repo || !session) {
           setCommitHistory('GitHubの情報を設定し、ログインしてください。');
           return;
@@ -30,14 +32,15 @@ export function useCommitHistory(
             owner,
             repo,
             branch,
-            date: dateString,
+            startDate: startDateString,
+            endDate: endDateString,
             reportType,
           }),
         });
 
         const data = await response.json();
         if (response.ok) {
-          setCommitHistory(data.commits || 'この日のコミットはありませんでした。');
+          setCommitHistory(data.commits || 'この期間のコミットはありませんでした。');
         } else {
           setCommitHistory(`コミット履歴の取得に失敗しました。\n${data.error || ''}`);
         }
@@ -47,7 +50,7 @@ export function useCommitHistory(
       }
     };
     fetchCommits();
-  }, [date, reportType, owner, repo, branch, session]);
+  }, [startDate, endDate, reportType, owner, repo, branch, session]);
 
   return { commitHistory };
 }

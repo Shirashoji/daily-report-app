@@ -14,13 +14,15 @@ import {
 } from './helpers';
 
 async function processRequest(request: Request) {
-  const { owner, repo, branch, date, reportType } = await parseAndValidateRequest(request);
-  const targetDate = getJstDate(date);
-  const { after, before } = getDateRange(reportType, targetDate);
+  const { owner, repo, branch, startDate, endDate } = await parseAndValidateRequest(request);
+  const after = new Date(new Date(startDate).getTime() - JST_OFFSET).toISOString();
+  const before = new Date(new Date(endDate).getTime() + (24 * 60 * 60 * 1000 - JST_OFFSET)).toISOString();
   const commits = await getCommits(owner, repo, branch, after, before);
   const formattedCommits = formatCommits(commits);
   return NextResponse.json({ commits: formattedCommits });
 }
+
+const JST_OFFSET = 9 * 60 * 60 * 1000;
 
 export async function POST(request: Request) {
   console.log('github-commits API: Request received.');

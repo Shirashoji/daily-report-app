@@ -98,21 +98,15 @@ export function handleError(error: unknown) {
 
 export async function parseAndValidateRequest(request: Request) {
   const body = await request.json();
-  const { owner, repo, branch, date, reportType } = body;
+  const { owner, repo, branch, startDate, endDate } = body;
 
   if (!owner || !repo) {
     throw new GitHubAPIError('owner and repo are required', 400);
   }
 
-  return { owner, repo, branch, date, reportType };
+  return { owner, repo, branch, startDate, endDate };
 }
 
-export function getDateRange(reportType: string, targetDate: Date) {
-  if (reportType === 'meeting') {
-    return getWeeklyDateRange(targetDate);
-  }
-  return getDailyDateRange(targetDate);
-}
 
 export async function getCommits(owner: string, repo: string, branch: string, after: string, before: string) {
   console.log('getCommits: owner', owner);

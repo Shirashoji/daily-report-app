@@ -11,6 +11,12 @@ export const formatDate = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
+export const formatDateRange = (startDate: Date, endDate: Date): string => {
+  const start = formatDate(startDate);
+  const end = formatDate(endDate);
+  return `${start} ~ ${end}`;
+};
+
 export const formatDuration = (totalMinutes: number): string => {
   if (totalMinutes === 0) return "0分";
   const hours = Math.floor(totalMinutes / 60);
@@ -27,7 +33,8 @@ export const formatDuration = (totalMinutes: number): string => {
 
 export const replaceTemplateVariables = (
   template: string,
-  targetDate: Date,
+  startDate: Date,
+  endDate: Date,
   customVariables: Record<string, string>,
 ): string => {
   return template.replace(
@@ -37,13 +44,13 @@ export const replaceTemplateVariables = (
         return customVariables[varName];
       }
 
-      const date = new Date(targetDate);
+      const date = new Date(startDate); // デフォルトはstartDateを基準とする
       if (offsets) {
         const offsetRegex = /:([+-]?\d+)([ymdh])/g;
         let offsetMatch;
         while ((offsetMatch = offsetRegex.exec(offsets)) !== null) {
-          const value = parseInt(offsetMatch, 10);
-          const unit = offsetMatch;
+          const value = parseInt(offsetMatch, 10); // offsetMatchが数値部分
+          const unit = offsetMatch; // offsetMatchが単位部分
           switch (unit) {
             case "y":
               date.setFullYear(date.getFullYear() + value);
@@ -68,6 +75,12 @@ export const replaceTemplateVariables = (
           return (date.getMonth() + 1).toString().padStart(2, "0");
         case "day":
           return date.getDate().toString().padStart(2, "0");
+        case "startDate":
+          return formatDate(startDate);
+        case "endDate":
+          return formatDate(endDate);
+        case "dateRange":
+          return formatDateRange(startDate, endDate);
         default:
           return match;
       }
@@ -75,128 +88,117 @@ export const replaceTemplateVariables = (
   );
 };
 
-export const generateWorkTimeText = (
-  workTimes: WorkTime[],
-  reportType: string,
-): string => {
+export const generateDailyWorkTimeText = (workTimes: WorkTime[]): string => {
   if (!workTimes || workTimes.length === 0) {
     return "";
   }
 
-  if (reportType === "meeting") {
-    const totalWeeklyMinutes = workTimes.reduce((total, wt) => {
+  let totalMinutes = 0;
+  const workTimeList = workTimes
+    .map((wt) => {
       if (wt.end) {
-        const start = new Date(wt.start);
-        const end = new Date(wt.end);
-        return total + Math.round((end.getTime() - start.getTime()) / (1000 * 60));
-      }
-      return total;
-    }, 0);
-
-    const firstDate = formatDate(new Date(workTimes.start));
-    const lastDate = formatDate(new Date(workTimes[workTimes.length - 1].start));
-
-    let workTimeText = "## 作業時間\n";
-    workTimeText += `${firstDate}~${lastDate}の合計作業時間：${formatDuration(
-      totalWeeklyMinutes,
-    )}\n`;
-    workTimeText += `詳細\n`;
-
-    const groupedByDay: { [key: string]: number } = {};
-    workTimes.forEach((wt) => {
-      if (wt.end) {
-        const date = formatDate(new Date(wt.start));
         const start = new Date(wt.start);
         const end = new Date(wt.end);
         const duration = Math.round(
           (end.getTime() - start.getTime()) / (1000 * 60),
         );
-        if (!groupedByDay[date]) {
-          groupedByDay[date] = 0;
+        totalMinutes += duration;
+        const startTime = start.toLocaleTimeString("ja-JP", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        const endTime = end.toLocaleTimeString("ja-JP", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        let text = `- ${startTime}〜${endTime}（${formatDuration(duration)}）`;
+        if (wt.memo) {
+          text += `\n  - メモ: ${wt.memo.replace(/\n/g, "\n    ")}`;
         }
-        groupedByDay[date] += duration;
+        return text;
       }
-    });
+      return null;
+    })
+    .filter((item) => item !== null);
 
-    Object.keys(groupedByDay)
-      .sort()
-      .forEach((date) => {
-        const totalDailyMinutes = groupedByDay[date];
-        workTimeText += `- ${date}: ${formatDuration(totalDailyMinutes)}\n`;
-      });
+  if (workTimeList.length > 0) {
+    let workTimeText = "# 作業時間\n";
+    workTimeText += `- 合計: ${formatDuration(totalMinutes)}\n`;
+    workTimeText += workTimeList.join("\n");
     return workTimeText;
-  } else {
-    let totalMinutes = 0;
-    const workTimeList = workTimes
-      .map((wt) => {
-        if (wt.end) {
-          const start = new Date(wt.start);
-          const end = new Date(wt.end);
-          const duration = Math.round(
-            (end.getTime() - start.getTime()) / (1000 * 60),
-          );
-          totalMinutes += duration;
-          const startTime = start.toLocaleTimeString("ja-JP", {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-          const endTime = end.toLocaleTimeString("ja-JP", {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-          let text = `- ${startTime}〜${endTime}（${formatDuration(duration)}）`;
-          if (wt.memo) {
-            text += `\n  - メモ: ${wt.memo.replace(/\n/g, "\n    ")}`;
-          }
-          return text;
-        }
-        return null;
-      })
-      .filter((item) => item !== null);
+  }
+  return "";
+};
 
-    if (workTimeList.length > 0) {
-      let workTimeText = "# 作業時間\n";
-      workTimeText += `- 合計: ${formatDuration(totalMinutes)}\n`;
-      workTimeText += workTimeList.join("\n");
-      return workTimeText;
-    }
+export const generateWeeklyWorkTimeText = (
+  workTimes: WorkTime[],
+  startDate: Date,
+  endDate: Date,
+): string => {
+  if (!workTimes || workTimes.length === 0) {
     return "";
+  }
+
+  const totalWeeklyMinutes = workTimes.reduce((total, wt) => {
+    if (wt.end) {
+      const start = new Date(wt.start);
+      const end = new Date(wt.end);
+      return total + Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+    }
+    return total;
+  }, 0);
+
+  let workTimeText = "## 作業時間\n";
+  workTimeText += `${formatDateRange(
+    startDate,
+    endDate,
+  )}の合計作業時間：${formatDuration(totalWeeklyMinutes)}\n`;
+  workTimeText += `詳細\n`;
+
+  const groupedByDay: { [key: string]: number } = {};
+  workTimes.forEach((wt) => {
+    if (wt.end) {
+      const date = formatDate(new Date(wt.start));
+      const start = new Date(wt.start);
+      const end = new Date(wt.end);
+      const duration = Math.round(
+        (end.getTime() - start.getTime()) / (1000 * 60),
+      );
+      if (!groupedByDay[date]) {
+        groupedByDay[date] = 0;
+      }
+      groupedByDay[date] += duration;
+    }
+  });
+
+  Object.keys(groupedByDay)
+    .sort()
+    .forEach((date) => {
+      const totalDailyMinutes = groupedByDay[date];
+      workTimeText += `- ${date}: ${formatDuration(totalDailyMinutes)}\n`;
+    });
+  return workTimeText;
+};
+
+export const generateWorkTimeText = (
+  workTimes: WorkTime[],
+  reportType: string,
+  startDate: Date,
+  endDate: Date,
+): string => {
+  if (reportType === "meeting") {
+    return generateWeeklyWorkTimeText(workTimes, startDate, endDate);
+  } else {
+    return generateDailyWorkTimeText(workTimes);
   }
 };
 
-export const createPrompt = (
-  reportType: string,
+export const createDailyReportPrompt = (
   template: string,
   workTimeText: string,
   commits: string,
-  lastMeetingContent?: string,
 ): string => {
-  if (reportType === "meeting") {
-    const lastMeetingPrompt = lastMeetingContent
-      ? `
-# 先週の議事録
----
-${lastMeetingContent}
----
-
-上記の「先週の議事録」の「次回までにやること」セクションの内容を抽出 し、以下のテンプレートの「今回やること」セクションに転記してください。`
-      : "";
-
-    return `以下のテンプレート、作業時間、コミット履歴を元に、MTG資料を完成させてください。
-「## やったこと」のセクションは、コミット履歴を参考にMarkdown形式で具体的に記述してください。
-作業時間は指定されたものをそのまま記載してください。
-その他のセクションはテンプレートの記述を維持してください。
-
-${template.replace("## 作業時間", workTimeText)}
-
-# コミット履歴
----
-${commits}
----
-
-# 生成されるMTG資料`;
-  } else {
-    return `以下のテンプレート、作業時間、コミット履歴を元に、日報を完成させてください。
+  return `以下のテンプレート、作業時間、コミット履歴を元に、日報を完成させてください。
 「# 作業内容」のセクションは、コミット履歴と作業時間中のメモを参考に、Markdown形式で具体的に記述してください。
 その他のセクション（「# 作業予定」「# note」「# 次回やること」）は空欄のままで構いません。
 作業時間は指定されたものをそのまま記載してください。
@@ -209,5 +211,54 @@ ${commits}
 ---
 
 # 生成される日報`;
+};
+
+export const createMeetingReportPrompt = (
+  template: string,
+  workTimeText: string,
+  commits: string,
+  lastMeetingContent?: string,
+): string => {
+  const lastMeetingPrompt = lastMeetingContent
+    ? `
+# 先週の議事録
+---
+${lastMeetingContent}
+---
+
+上記の「先週の議事録」の「次回までにやること」セクションの内容を抽出 し、以下のテンプレートの「今回やること」セクションに転記してください。`
+    : "";
+
+  return `以下のテンプレート、作業時間、コミット履歴を元に、MTG資料を完成させてください。
+「## やったこと」のセクションは、コミット履歴を参考にMarkdown形式で具体的に記述してください。
+作業時間は指定されたものをそのまま記載してください。
+その他のセクションはテンプレートの記述を維持してください。
+
+${template.replace("## 作業時間", workTimeText)}
+
+# コミット履歴
+---
+${commits}
+---
+
+# 生成されるMTG資料`;
+};
+
+export const createPrompt = (
+  reportType: string,
+  template: string,
+  workTimeText: string,
+  commits: string,
+  lastMeetingContent?: string,
+): string => {
+  if (reportType === "meeting") {
+    return createMeetingReportPrompt(
+      template,
+      workTimeText,
+      commits,
+      lastMeetingContent,
+    );
+  } else {
+    return createDailyReportPrompt(template, workTimeText, commits);
   }
 };

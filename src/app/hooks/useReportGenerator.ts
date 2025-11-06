@@ -7,7 +7,8 @@ export function useReportGenerator(
   commits: string,
   model: string,
   workTimes: { start: Date; end: Date | null; memo: string }[],
-  targetDate: Date
+  startDate: Date,
+  endDate: Date,
 ) {
   const [generatedText, setGeneratedText] = useState('');
 
@@ -34,9 +35,13 @@ export function useReportGenerator(
           commits,
           model,
           reportType,
-          workTimes: workTimes.filter(wt => formatDate(wt.start) === formatDate(targetDate)),
-          targetDate,
-          customVariables, 
+          workTimes: workTimes.filter(wt => {
+            const wtStart = new Date(wt.start);
+            return wtStart >= startDate && wtStart <= endDate;
+          }),
+          startDate,
+          endDate,
+          customVariables,
         }),
       });
       const data = await response.json();
@@ -48,14 +53,14 @@ export function useReportGenerator(
     } catch (error) {
       console.error("Error generating report:", error);
       const message = error instanceof Error ? error.message : "不明なエラー";
-      setGeneratedText(`日報の生成に失敗しました。: ${message}`);
+      setGeneratedText(`レポートの生成に失敗しました。: ${message}`);
     }
   };
 
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(generatedText);
-      alert('日報をクリップボードにコピーしました。');
+      alert('レポートをクリップボードにコピーしました。');
     } catch (error) {
       console.error("Failed to copy to clipboard:", error);
       alert('クリップボードへのコピーに失敗しました。');

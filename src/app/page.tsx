@@ -12,35 +12,6 @@ const GITHUB_APP_NAME = process.env.NEXT_PUBLIC_GITHUB_APP_NAME;
 
 import { formatDate } from '../lib/utils';
 
-/**
- * 指定されたUTC DateオブジェクトがJSTで何月何日であるかを基準に、
- * そのJSTの日付の00:00:00と23:59:59.999をUTCで返す。
- * @param {Date} utcDate - 基準となるUTC Dateオブジェクト
- * @returns {{ startOfDayJST_UTC: Date, endOfDayJST_UTC: Date }}
- */
-const getJstDayBoundariesInUtc = (utcDate: Date) => {
-  // JSTのオフセット（+9時間）をミリ秒で取得
-  const jstOffsetMs = 9 * 60 * 60 * 1000;
-
-  // 基準となるUTC DateオブジェクトをJSTに変換したときのタイムスタンプ
-  const utcTimestamp = utcDate.getTime();
-  const jstTimestamp = utcTimestamp + jstOffsetMs;
-
-  // JSTでの年、月、日を取得
-  const jstDate = new Date(jstTimestamp);
-  const jstYear = jstDate.getUTCFullYear();
-  const jstMonth = jstDate.getUTCMonth();
-  const jstDay = jstDate.getUTCDate();
-
-  // JSTのその日の00:00:00をUTCで計算
-  const startOfDayJST_UTC = new Date(Date.UTC(jstYear, jstMonth, jstDay, 0, 0, 0));
-
-  // JSTのその日の23:59:59.999をUTCで計算
-  const endOfDayJST_UTC = new Date(Date.UTC(jstYear, jstMonth, jstDay, 23, 59, 59, 999));
-
-  return { startOfDayJST_UTC, endOfDayJST_UTC };
-};
-
 const formatWorkTime = (date: Date) => {
   const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   return jstDate.toISOString().slice(11, 16);
@@ -128,12 +99,13 @@ export default function Home() {
   }
 
 
-  const [targetDate, setTargetDate] = useState(new Date());
-  const [reportType, setReportType] = useState('daily');
+  const [reportType, setReportType] = useState<'daily' | 'meeting'>('daily');
+  const [startDate, setStartDate] = useState<Date>(new Date());
+  const [endDate, setEndDate] = useState<Date>(new Date());
 
   const {
     commitHistory,
-  } = useCommitHistory(session, githubOwner, githubRepo, selectedBranch, targetDate, reportType);
+  } = useCommitHistory(session, githubOwner, githubRepo, selectedBranch, startDate, endDate, reportType);
 
   const {
     model,
@@ -146,14 +118,22 @@ export default function Home() {
     generateReport,
     copyToClipboard,
     setGeneratedText,
-  } = useReportGenerator(commitHistory, model, workTimes, targetDate);
+  } = useReportGenerator(commitHistory, model, workTimes, startDate, endDate);
 
-
-
-
-
-
-
+  const handleReportTypeChange = (newType: 'daily' | 'meeting') => {
+    setReportType(newType);
+    if (newType === 'daily') {
+      const today = new Date();
+      setStartDate(today);
+      setEndDate(today);
+    } else {
+      const today = new Date();
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(today.getDate() - 6);
+      setStartDate(sevenDaysAgo);
+      setEndDate(today);
+    }
+  };
 
 
 
@@ -169,7 +149,7 @@ export default function Home() {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">日報作成ツール</h1>
+        <h1 className="text-2xl font-bold">レポート作成ツール</h1>
         <div className="flex items-center space-x-4">
           {session ? (
             <>
@@ -256,9 +236,15 @@ export default function Home() {
         )}
         <div>
               <div className="flex justify-between items-center mb-2">
-                <h3 className="text-lg font-medium">記録された作業（{formatDate(targetDate)}）</h3>
+                <h3 className="text-lg font-medium">記録された作業（{formatDate(startDate)} ~ {formatDate(endDate)}）</h3>
                 <span className="text-lg font-medium">
-                  合計: {Math.floor(calculateTotalWorkDuration(workTimes.filter(wt => formatDate(wt.start) === formatDate(targetDate))) / 60)}時間 {calculateTotalWorkDuration(workTimes.filter(wt => formatDate(wt.start) === formatDate(targetDate))) % 60}分
+                  合計: {Math.floor(calculateTotalWorkDuration(workTimes.filter(wt => {
+                    const wtStart = new Date(wt.start);
+                    return wtStart >= startDate && wtStart <= endDate;
+                  })) / 60)}時間 {calculateTotalWorkDuration(workTimes.filter(wt => {
+                    const wtStart = new Date(wt.start);
+                    return wtStart >= startDate && wtStart <= endDate;
+                  })) % 60}分
                 </span>
               </div>
               <ul className="space-y-2">
@@ -266,10 +252,7 @@ export default function Home() {
                   .map((wt, _index) => ({ ...wt, originalIndex: _index })) // 元のインデックスを保持
                   .filter(wt => {
                     const wtStart = new Date(wt.start); // workTimesのstart時刻 (UTC)
-                    const { startOfDayJST_UTC, endOfDayJST_UTC } = getJstDayBoundariesInUtc(targetDate);
-
-                    // workTimesのstart時刻が、targetDateがJSTで示す日の00:00:00から23:59:59.999の範囲内にあるか
-                    return wtStart >= startOfDayJST_UTC && wtStart <= endOfDayJST_UTC;
+                    return wtStart >= startDate && wtStart <= endDate;
                   })
                   .map((wt) => (
                     <li key={wt.originalIndex} className="p-3 bg-gray-100 rounded-md">
@@ -319,22 +302,68 @@ export default function Home() {
 
 
 
-
       <div className="mb-4 grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="date-select" className="block text-sm font-medium text-gray-700">対象日:</label>
-          <input 
-            type="date" 
-            id="date-select"
-            value={formatDate(targetDate)}
-            onChange={(e) => {
-              const dateString = e.target.value;
-              const utcDate = new Date(dateString + 'T00:00:00.000Z');
-              setTargetDate(utcDate);
-            }}
+          <label htmlFor="report-type-select" className="block text-sm font-medium text-gray-700">レポートタイプ:</label>
+          <select
+            id="report-type-select"
+            value={reportType}
+            onChange={(e) => handleReportTypeChange(e.target.value as 'daily' | 'meeting')}
             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-          />
+          >
+            <option value="daily">日報</option>
+            <option value="meeting">MTG資料</option>
+          </select>
         </div>
+        {reportType === 'daily' && (
+          <div>
+            <label htmlFor="date-select" className="block text-sm font-medium text-gray-700">対象日:</label>
+            <input 
+              type="date" 
+              id="date-select"
+              value={formatDate(startDate)}
+              onChange={(e) => {
+                const dateString = e.target.value;
+                const utcDate = new Date(dateString + 'T00:00:00.000Z');
+                setStartDate(utcDate);
+                setEndDate(utcDate); // 日報の場合は開始日と終了日を同じにする
+              }}
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            />
+          </div>
+        )}
+        {reportType === 'meeting' && (
+          <>
+            <div>
+              <label htmlFor="start-date-select" className="block text-sm font-medium text-gray-700">開始日:</label>
+              <input 
+                type="date" 
+                id="start-date-select"
+                value={formatDate(startDate)}
+                onChange={(e) => {
+                  const dateString = e.target.value;
+                  const utcDate = new Date(dateString + 'T00:00:00.000Z');
+                  setStartDate(utcDate);
+                }}
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              />
+            </div>
+            <div>
+              <label htmlFor="end-date-select" className="block text-sm font-medium text-gray-700">終了日:</label>
+              <input 
+                type="date" 
+                id="end-date-select"
+                value={formatDate(endDate)}
+                onChange={(e) => {
+                  const dateString = e.target.value;
+                  const utcDate = new Date(dateString + 'T00:00:00.000Z');
+                  setEndDate(utcDate);
+                }}
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              />
+            </div>
+          </>
+        )}
         <div>
           <label htmlFor="model-select" className="block text-sm font-medium text-gray-700">Geminiモデルを選択:</label>
           <select
@@ -414,7 +443,7 @@ export default function Home() {
           </div>
         </div>
         <div>
-          <h2 className="text-xl font-semibold mb-2">生成された日報</h2>
+          <h2 className="text-xl font-semibold mb-2">生成された{reportType === 'daily' ? '日報' : 'MTG資料'}</h2>
           <textarea
             className="w-full h-96 p-2 border rounded-md"
             value={generatedText}
@@ -426,15 +455,9 @@ export default function Home() {
       <div className="mt-4">
         <button
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={() => generateReport('daily')}
+          onClick={() => generateReport(reportType)}
         >
-          日報を生成
-        </button>
-        <button
-          className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded ml-2"
-          onClick={() => generateReport('meeting')}
-        >
-          MTG資料を生成
+          {reportType === 'daily' ? '日報を生成' : 'MTG資料を生成'}
         </button>
         <button
           className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-2"
