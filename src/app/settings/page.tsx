@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useSettings } from '../hooks/useSettings';
+import { useWorkTime } from '../hooks/useWorkTime';
+import { formatDate } from '../lib/utils';
 
 /**
  * A page where users can configure their settings for various services.
@@ -14,54 +16,38 @@ export default function SettingsPage() {
     model,
     handleSetModel,
   } = useSettings();
+  const { workTimes, importWorkTimes } = useWorkTime();
   const [message, setMessage] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleExportWorkTimes = () => {
-    const workTimesJson = localStorage.getItem('workTimes');
-    if (workTimesJson) {
-      const blob = new Blob([workTimesJson], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `work_times_export_${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      setMessage('作業時間データをエクスポートしました。');
-    } else {
-      setMessage('エクスポートする作業時間データがありません。');
-    }
+    const dataStr = JSON.stringify(workTimes, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `work-times-${formatDate(new Date())}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    setMessage('作業時間データをエクスポートしました。');
     setTimeout(() => setMessage(''), 3000);
   };
 
-  const handleImportWorkTimes = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) {
-      setMessage('ファイルが選択されていません。');
-      setTimeout(() => setMessage(''), 3000);
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const importedData = JSON.parse(e.target?.result as string);
-        // データの形式を簡易的に検証
-        if (Array.isArray(importedData) && importedData.every(item => 'start' in item && 'end' in item && 'memo' in item)) {
-          localStorage.setItem('workTimes', JSON.stringify(importedData));
-          setMessage('作業時間データをインポートしました。メインページに戻って確認してください。');
-          // メインページにリダイレクトするか、リロードを促す
-        } else {
-          throw new Error('インポートされたJSONの形式が正しくありません。');
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result;
+        if (typeof text === 'string') {
+          importWorkTimes(text);
+          setMessage('作業時間データをインポートしました。');
+          setTimeout(() => setMessage(''), 3000);
         }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : '不明なエラー';
-        setMessage(`データのインポートに失敗しました: ${errorMessage}`);
-      }
-      setTimeout(() => setMessage(''), 3000);
-    };
-    reader.readAsText(file);
+      };
+      reader.readAsText(file);
+    }
   };
 
   return (
@@ -107,10 +93,17 @@ export default function SettingsPage() {
               <input
                 type="file"
                 id="import-file"
+                ref={fileInputRef}
                 accept=".json"
-                onChange={handleImportWorkTimes}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                onChange={handleFileImport}
+                className="hidden"
               />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
+              >
+                ファイルを選択
+              </button>
             </div>
           </div>
         </div>

@@ -60,33 +60,7 @@ export default function PageClient({ initialReportType }: PageClientProps) {
     importWorkTimes,
   } = useWorkTime();
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result;
-        if (typeof text === 'string') {
-          importWorkTimes(text);
-        }
-      };
-      reader.readAsText(file);
-    }
-  };
-
-  const handleExportWorkTimes = () => {
-    const dataStr = JSON.stringify(workTimes, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = `work-times-${formatDate(new Date())}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-  }
 
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>(new Date());
@@ -139,25 +113,6 @@ export default function PageClient({ initialReportType }: PageClientProps) {
             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-400"
           >
             作業終了
-          </button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileImport}
-            className="hidden"
-            accept=".json"
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
-          >
-            作業時間データをJSONでインポート
-          </button>
-          <button
-            onClick={handleExportWorkTimes}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          >
-            作業時間データをJSONでエクスポート
           </button>
         </div>
         {isWorking && (
