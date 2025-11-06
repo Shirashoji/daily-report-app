@@ -1,5 +1,5 @@
 // src/lib/github.ts
-import { auth } from '@/app/api/auth/[...nextauth]/route';
+
 import jwt from "jsonwebtoken";
 
 const GITHUB_APP_ID = process.env.GITHUB_APP_ID!;
@@ -143,7 +143,7 @@ export async function fetchFromGitHub(url: string, owner: string, repo: string) 
       let errorData: Record<string, unknown> = {};
       try {
         errorData = JSON.parse(errorText);
-      } catch (e) {
+      } catch {
         // Not a JSON response, which is fine.
       }
       throw new GitHubAPIError(String(errorData.message || errorText || "Failed to fetch from GitHub"), response.status);

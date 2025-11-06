@@ -1,16 +1,10 @@
 import { NextResponse } from 'next/server';
-import { fetchFromGitHub, GitHubAPIError } from '@/lib/github';
 import {
-  getJstDate,
-  getWeeklyDateRange,
-  getDailyDateRange,
-  fetchCommitsForBranch,
-  fetchCommitsFromAllBranches,
   formatCommits,
   handleError,
   parseAndValidateRequest,
-  getDateRange,
   getCommits,
+  JST_OFFSET,
 } from './helpers';
 
 async function processRequest(request: Request) {
@@ -22,7 +16,7 @@ async function processRequest(request: Request) {
   return NextResponse.json({ commits: formattedCommits });
 }
 
-const JST_OFFSET = 9 * 60 * 60 * 1000;
+
 
 export async function POST(request: Request) {
   console.log('github-commits API: Request received.');

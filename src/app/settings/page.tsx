@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useSettings } from '../hooks/useSettings';
 import { useWorkTime } from '../hooks/useWorkTime';
-import { formatDate } from '../lib/utils';
+import { formatDate } from '../../lib/utils';
 
 /**
  * A page where users can configure their settings for various services.

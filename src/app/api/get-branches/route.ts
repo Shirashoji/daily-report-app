@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { fetchFromGitHub, GitHubAPIError } from '@/lib/github';
 import { fetchBranches, handleError, parseAndValidateRequest } from './helpers';
 
 export async function POST(request: Request) {

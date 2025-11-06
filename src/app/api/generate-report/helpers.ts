@@ -49,8 +49,8 @@ export const replaceTemplateVariables = (
         const offsetRegex = /:([+-]?\d+)([ymdh])/g;
         let offsetMatch;
         while ((offsetMatch = offsetRegex.exec(offsets)) !== null) {
-          const value = parseInt(offsetMatch, 10); // offsetMatchが数値部分
-          const unit = offsetMatch; // offsetMatchが単位部分
+          const value = parseInt(offsetMatch[1], 10); // offsetMatchが数値部分
+          const unit = offsetMatch[2]; // offsetMatchが単位部分
           switch (unit) {
             case "y":
               date.setFullYear(date.getFullYear() + value);
@@ -217,17 +217,8 @@ export const createMeetingReportPrompt = (
   template: string,
   workTimeText: string,
   commits: string,
-  lastMeetingContent?: string,
 ): string => {
-  const lastMeetingPrompt = lastMeetingContent
-    ? `
-# 先週の議事録
----
-${lastMeetingContent}
----
 
-上記の「先週の議事録」の「次回までにやること」セクションの内容を抽出 し、以下のテンプレートの「今回やること」セクションに転記してください。`
-    : "";
 
   return `以下のテンプレート、作業時間、コミット履歴を元に、MTG資料を完成させてください。
 「## やったこと」のセクションは、コミット履歴を参考にMarkdown形式で具体的に記述してください。
@@ -249,14 +240,12 @@ export const createPrompt = (
   template: string,
   workTimeText: string,
   commits: string,
-  lastMeetingContent?: string,
 ): string => {
   if (reportType === "meeting") {
     return createMeetingReportPrompt(
       template,
       workTimeText,
       commits,
-      lastMeetingContent,
     );
   } else {
     return createDailyReportPrompt(template, workTimeText, commits);

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { fetchFromGitHub, GitHubAPIError } from '@/lib/github';
 import { GitHubCommitResponse, GitHubBranch } from './interfaces';
 
-const JST_OFFSET = 9 * 60 * 60 * 1000;
+export const JST_OFFSET = 9 * 60 * 60 * 1000;
 
 export const getJstDate = (dateString?: string | null) => {
   if (!dateString) {

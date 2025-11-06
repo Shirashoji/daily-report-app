@@ -19,7 +19,6 @@ async function generateReportFromCommits(
   startDateStr: string,
   endDateStr: string,
   customVariables: Record<string, string> = {},
-  lastMeetingContent?: string,
 ): Promise<string> {
   const templateFileName =
     reportType === "meeting" ? "meeting-template.md" : "daily-template.md";
@@ -36,7 +35,6 @@ async function generateReportFromCommits(
     template,
     workTimeText,
     commits,
-    lastMeetingContent,
   );
 
   const result = await genAI.models.generateContent({
@@ -56,7 +54,6 @@ export async function POST(request: Request) {
     startDate,
     endDate,
     customVariables,
-    lastMeetingContent,
   } = await request.json();
 
   try {
@@ -68,7 +65,6 @@ export async function POST(request: Request) {
       startDate,
       endDate,
       customVariables,
-      lastMeetingContent,
     );
     return NextResponse.json({ report });
   } catch (error) {
