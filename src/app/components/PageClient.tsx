@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 
-import { formatDate } from '../lib/utils';
+import { formatDate } from '../../lib/utils';
 import { useGitHub } from '../hooks/useGitHub';
 import { useWorkTime } from '../hooks/useWorkTime';
 import { useCommitHistory } from '../hooks/useCommitHistory';
