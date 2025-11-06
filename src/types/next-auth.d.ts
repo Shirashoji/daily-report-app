@@ -10,7 +10,6 @@ declare module "next-auth" {
    */
   interface Session {
     accessToken?: string
-    installationId?: string
     error?: string
     user: {
       id?: string
@@ -25,6 +24,5 @@ declare module "next-auth/jwt" {
    */
   interface JWT {
     accessToken?: string
-    installationId?: string
   }
 }

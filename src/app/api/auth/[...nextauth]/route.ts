@@ -38,45 +38,12 @@ const nextAuthOptions: NextAuthConfig = {
     async jwt({ token, account }: { token: JWT; account?: Account | null | undefined }) {
       if (account) {
         token.accessToken = account.access_token as string;
-
-        const res = await fetch("https://api.github.com/user/installations", {
-          headers: {
-            Authorization: `token ${token.accessToken}`,
-            Accept: "application/vnd.github.v3+json",
-          },
-        });
-
-        if (!res.ok) {
-          const errorBody = await res.text();
-          console.error(
-            `Failed to fetch GitHub installations: ${res.status} ${res.statusText}`,
-            errorBody
-          );
-          token.error = `Failed to fetch GitHub App installations. Please ensure the app is installed and authorized.`;
-          return token;
-        }
-
-        try {
-          const installations = await res.json();
-          if (installations.total_count > 0 && installations.installations.length > 0) {
-            token.installationId = installations.installations[0].id;
-          } else {
-            token.error = "GitHub App not installed for this user.";
-          }
-        } catch (error) {
-          console.error("Error parsing GitHub installations response:", error);
-          token.error = "Failed to parse GitHub installations response.";
-        }
       }
       return token;
     },
 
     async session({ session, token }: { session: Session; token: JWT }) {
-      if (token.error) {
-        session.error = token.error as string;
-      }
       session.accessToken = token.accessToken as string;
-      session.installationId = token.installationId as string;
       return session;
     },
   },

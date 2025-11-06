@@ -24,12 +24,10 @@ export class GitHubAPIError extends Error {
 }
 
 /**
- * Generates a GitHub App token and uses it to create an installation access token.
- * This token can be used to authenticate with the GitHub API on behalf of a GitHub App installation.
- * @param installationId The ID of the GitHub App installation.
- * @returns A promise that resolves to the installation access token.
+ * Generates a JWT for the GitHub App.
+ * @returns {string} The generated JWT.
  */
-async function getInstallationAccessToken(installationId: string) {
+function getAppToken(): string {
   const now = Math.floor(Date.now() / 1000);
   const payload = {
     iat: now,
@@ -38,7 +36,17 @@ async function getInstallationAccessToken(installationId: string) {
   };
 
   const privateKey = GITHUB_APP_PRIVATE_KEY.replace(/\\n/g, '\n');
-  const appToken = jwt.sign(payload, privateKey, { algorithm: "RS256" });
+  return jwt.sign(payload, privateKey, { algorithm: "RS256" });
+}
+
+/**
+ * Generates a GitHub App token and uses it to create an installation access token.
+ * This token can be used to authenticate with the GitHub API on behalf of a GitHub App installation.
+ * @param installationId The ID of the GitHub App installation.
+ * @returns A promise that resolves to the installation access token.
+ */
+async function getInstallationAccessToken(installationId: string) {
+  const appToken = getAppToken();
 
   const response = await fetch(
     `https://api.github.com/app/installations/${installationId}/access_tokens`,
@@ -61,49 +69,72 @@ async function getInstallationAccessToken(installationId: string) {
 
 /**
  * Retrieves the session and returns the appropriate headers for making requests to the GitHub API.
- * If an installation ID is present in the session, it will generate an installation access token.
- * Otherwise, it will use the user's access token.
+ * It determines the correct GitHub App installation for the given repository,
+ * generates an installation access token, and uses it for authentication.
+ * @param owner The owner of the repository.
+ * @param repo The name of the repository.
  * @returns A promise that resolves to the headers for a GitHub API request.
- * @throws {GitHubAPIError} If the session is not found or an access token cannot be obtained.
+ * @throws {GitHubAPIError} If the session is not found, the installation cannot be determined, or an access token cannot be obtained.
  */
-async function getGitHubHeaders() {
-  const session = await auth();
-  if (!session) {
-    console.error('getGitHubHeaders: No session found.');
-    throw new GitHubAPIError('Unauthorized: No session found.', 401);
-  }
+async function getGitHubHeaders(owner: string, repo: string) {
+  const appToken = getAppToken();
+  console.log(`getGitHubHeaders: Finding installation for ${owner}/${repo}`);
 
-  console.log('getGitHubHeaders: Preparing headers. Enforcing GitHub App authentication.');
-
-  if (session.installationId) {
-    console.log(`getGitHubHeaders: Found installationId: ${session.installationId}. Will use installation token.`);
-    const token = await getInstallationAccessToken(session.installationId);
-    
-    if (!token) {
-      console.error('getGitHubHeaders: Could not obtain installation access token.');
-      throw new GitHubAPIError('Unauthorized: Could not obtain installation access token.', 401);
-    }
-
-    return {
-      'Authorization': `token ${token}`,
+  // Find the installation for the specific repository, authenticated as the app
+  const installationResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/installation`, {
+    headers: {
+      'Authorization': `Bearer ${appToken}`,
       'Accept': 'application/vnd.github.v3+json',
-    };
-  } else {
-    console.error('getGitHubHeaders: No installationId found. Cannot authenticate as GitHub App.');
-    throw new GitHubAPIError('Unauthorized: This application requires installation as a GitHub App.', 401);
+    },
+  });
+
+  if (!installationResponse.ok) {
+    const errorBody = await installationResponse.text();
+    console.error(
+      `getGitHubHeaders: Failed to get installation for ${owner}/${repo}. Status: ${installationResponse.status}`,
+      errorBody
+    );
+    if (installationResponse.status === 404) {
+      throw new GitHubAPIError(`GitHub App not installed on ${owner}/${repo}.`, 404);
+    }
+    throw new GitHubAPIError("Failed to get installation for repository.", installationResponse.status);
   }
+
+  const installation = await installationResponse.json();
+  const installationId = installation.id;
+
+  if (!installationId) {
+    console.error(`getGitHubHeaders: No installation ID found for ${owner}/${repo}.`);
+    throw new GitHubAPIError(`Could not find GitHub App installation for ${owner}/${repo}.`, 404);
+  }
+
+  console.log(`getGitHubHeaders: Found installationId: ${installationId} for ${owner}/${repo}.`);
+  const token = await getInstallationAccessToken(installationId.toString());
+
+  if (!token) {
+    console.error("getGitHubHeaders: Could not obtain installation access token.");
+    throw new GitHubAPIError("Unauthorized: Could not obtain installation access token.", 401);
+  }
+
+  return {
+    'Authorization': `token ${token}`,
+    'Accept': 'application/vnd.github.v3+json',
+  };
 }
 
+
 /**
- * Fetches data from the GitHub API using the appropriate authentication.
- * @param {string} url - The GitHub API URL to fetch from.
- * @returns {Promise<Response>} A promise that resolves to the raw response from the GitHub API.
+ * Fetches data from the GitHub API using the appropriate authentication for the specified repository.
+ * @param url The GitHub API URL to fetch from.
+ * @param owner The owner of the repository.
+ * @param repo The name of the repository.
+ * @returns A promise that resolves to the raw response from the GitHub API.
  * @throws {GitHubAPIError} If the fetch fails or the response is not ok.
  */
-export async function fetchFromGitHub(url: string) {
+export async function fetchFromGitHub(url: string, owner: string, repo: string) {
   try {
-    const headers = await getGitHubHeaders();
-    console.error('fetchFromGitHub: Attempting to fetch from URL:', url, 'with headers:', headers);
+    const headers = await getGitHubHeaders(owner, repo);
+    console.log("fetchFromGitHub: Attempting to fetch from URL:", url);
     const response = await fetch(url, { headers });
 
     if (!response.ok) {
@@ -113,9 +144,9 @@ export async function fetchFromGitHub(url: string) {
       try {
         errorData = JSON.parse(errorText);
       } catch (e) {
-        console.error("Error parsing error response:", e);
+        // Not a JSON response, which is fine.
       }
-      throw new GitHubAPIError(String(errorData.message || errorText || 'Failed to fetch from GitHub'), response.status);
+      throw new GitHubAPIError(String(errorData.message || errorText || "Failed to fetch from GitHub"), response.status);
     }
 
     return response;
