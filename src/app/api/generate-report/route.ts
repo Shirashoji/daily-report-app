@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 
 
-import { generateReportFlow } from "../../genkit";
+import { generateReportFlow } from "../../../src/genkit.config";
 
 export async function POST(request: Request) {
   const {
