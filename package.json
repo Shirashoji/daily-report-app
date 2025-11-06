@@ -7,7 +7,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "genkit:dev": "genkit start -- npm run dev"
+    "genkit:dev": "genkit start --config=src/genkit/index.ts -- npm run dev"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.22.0",
