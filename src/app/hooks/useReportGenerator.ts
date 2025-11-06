@@ -11,8 +11,8 @@ export function useReportGenerator(
 ) {
   const [generatedText, setGeneratedText] = useState('');
 
-  const generateReport = async () => {
-    setGeneratedText("日報生成中...");
+  const generateReport = async (reportType: 'daily' | 'meeting') => {
+    setGeneratedText("レポート生成中...");
 
     let customVariables: Record<string, string> = {};
     const savedCustomVarsJson = localStorage.getItem('customVariables');
@@ -30,12 +30,12 @@ export function useReportGenerator(
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          commits, 
-          model, 
-          reportType: 'daily', 
-          workTimes: workTimes.filter(wt => formatDate(wt.start) === formatDate(targetDate)), 
-          targetDate, 
+        body: JSON.stringify({
+          commits,
+          model,
+          reportType,
+          workTimes: workTimes.filter(wt => formatDate(wt.start) === formatDate(targetDate)),
+          targetDate,
           customVariables, 
         }),
       });

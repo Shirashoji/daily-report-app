@@ -129,10 +129,11 @@ export default function Home() {
 
 
   const [targetDate, setTargetDate] = useState(new Date());
+  const [reportType, setReportType] = useState('daily');
 
   const {
     commitHistory,
-  } = useCommitHistory(session, githubOwner, githubRepo, selectedBranch, targetDate);
+  } = useCommitHistory(session, githubOwner, githubRepo, selectedBranch, targetDate, reportType);
 
   const {
     model,
@@ -343,8 +344,8 @@ export default function Home() {
             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
           >
             <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-            <option value="gemini-1.5-flash-latest">Gemini 1.5 Flash</option>
-            <option value="gemini-1.5-pro-latest">Gemini 1.5 Pro</option>
+            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
           </select>
         </div>
       </div>
@@ -425,9 +426,15 @@ export default function Home() {
       <div className="mt-4">
         <button
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={generateReport}
+          onClick={() => generateReport('daily')}
         >
           日報を生成
+        </button>
+        <button
+          className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded ml-2"
+          onClick={() => generateReport('meeting')}
+        >
+          MTG資料を生成
         </button>
         <button
           className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-2"
