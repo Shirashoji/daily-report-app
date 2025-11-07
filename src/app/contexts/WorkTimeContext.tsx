@@ -28,31 +28,45 @@ interface WorkTimeContextType {
 const WorkTimeContext = createContext<WorkTimeContextType | undefined>(undefined);
 
 export function WorkTimeProvider({ children }: { children: ReactNode }) {
-  const [workTimes, setWorkTimes] = useState<WorkTime[]>([]);
-  const [isWorking, setIsWorking] = useState(false);
-  const [currentMemo, setCurrentMemo] = useState('');
-  const [editingWorkTimeIndex, setEditingWorkTimeIndex] = useState<number | null>(null);
-
-  useEffect(() => {
-    const savedWorkTimesJson = localStorage.getItem('workTimes');
-    if (savedWorkTimesJson) {
-      try {
-        const parsedWorkTimes = JSON.parse(savedWorkTimesJson).map((wt: { start: string; end: string | null; memo: string }) => ({
+  const [workTimes, setWorkTimes] = useState<WorkTime[]>(() => {
+    if (typeof window === 'undefined') {
+      return [];
+    }
+    try {
+      const savedWorkTimesJson = localStorage.getItem('workTimes');
+      if (savedWorkTimesJson) {
+        return JSON.parse(savedWorkTimesJson).map((wt: { start: string; end: string | null; memo: string }) => ({
           start: new Date(wt.start),
           end: wt.end ? new Date(wt.end) : null,
           memo: wt.memo || '',
         }));
-        setWorkTimes(parsedWorkTimes);
-        const lastWorkTime = parsedWorkTimes[parsedWorkTimes.length - 1];
-        if (lastWorkTime && lastWorkTime.end === null) {
-          setIsWorking(true);
-        }
-      } catch (error) {
-        console.error("Error parsing workTimes from localStorage:", error);
-        setWorkTimes([]);
       }
+    } catch (error) {
+      console.error("Error parsing workTimes from localStorage:", error);
     }
-  }, []);
+    return [];
+  });
+
+  const [isWorking, setIsWorking] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    try {
+      const savedWorkTimesJson = localStorage.getItem('workTimes');
+      if (savedWorkTimesJson) {
+        const parsedWorkTimes = JSON.parse(savedWorkTimesJson);
+        const lastWorkTime = parsedWorkTimes[parsedWorkTimes.length - 1];
+        return lastWorkTime && lastWorkTime.end === null;
+      }
+    } catch (error) {
+      console.error("Error parsing workTimes from localStorage:", error);
+    }
+    return false;
+  });
+  const [currentMemo, setCurrentMemo] = useState('');
+  const [editingWorkTimeIndex, setEditingWorkTimeIndex] = useState<number | null>(null);
+
+
 
   useEffect(() => {
     try {
