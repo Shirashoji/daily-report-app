@@ -1,7 +1,5 @@
 // @ts-expect-error - Module augmentation
-import NextAuth, { DefaultSession } from "next-auth"
-// @ts-expect-error - Module augmentation
-import { JWT } from "next-auth/jwt"
+import { DefaultSession } from "next-auth"
 
 declare module "next-auth" {
   /**

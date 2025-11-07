@@ -1,16 +1,11 @@
+// src/app/stats/page.tsx
 "use client";
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-
-/**
- * Represents a work time entry.
- */
-interface WorkTime {
-  start: string;
-  end: string | null;
-  memo: string;
-}
+import { useWorkTime } from '@/hooks/useWorkTime';
+import { formatDate } from '@/lib/utils';
+import type { ReactElement } from 'react';
 
 /**
  * Calculates the duration of work in minutes.
@@ -21,40 +16,31 @@ interface WorkTime {
 const calculateWorkDuration = (start: Date, end: Date | null): number => {
   if (!end) return 0;
   const diff = end.getTime() - start.getTime();
-  return Math.round(diff / (1000 * 60)); // in minutes
+  return Math.round(diff / 60000); // in minutes
 };
 
 /**
  * A page that displays statistics about work time.
- * It reads work time data from localStorage and calculates the total work time and the first recorded date.
  * @returns {React.ReactElement} The stats page.
  */
-const StatsPage = () => {
+export default function StatsPage(): ReactElement {
+  const { workTimes } = useWorkTime();
   const [totalMinutes, setTotalMinutes] = useState(0);
   const [firstDate, setFirstDate] = useState<string | null>(null);
 
   useEffect(() => {
-    const savedWorkTimes = localStorage.getItem('workTimes');
-    if (savedWorkTimes) {
-      const parsedWorkTimes: WorkTime[] = JSON.parse(savedWorkTimes);
-      
-      if (parsedWorkTimes.length > 0) {
-        const firstEntry = new Date(parsedWorkTimes[0].start);
-        const year = firstEntry.getFullYear();
-        const month = (firstEntry.getMonth() + 1).toString().padStart(2, '0');
-        const day = firstEntry.getDate().toString().padStart(2, '0');
-        setFirstDate(`${year}/${month}/${day}`);
-      }
+    if (workTimes.length > 0) {
+      const firstEntry = new Date(workTimes[0].start);
+      setFirstDate(formatDate(firstEntry));
 
-      const total = parsedWorkTimes
-        .reduce((acc, wt) => {
-          const startDate = new Date(wt.start);
-          const endDate = wt.end ? new Date(wt.end) : null;
-          return acc + calculateWorkDuration(startDate, endDate);
-        }, 0);
+      const total = workTimes.reduce((acc, wt) => {
+        const startDate = new Date(wt.start);
+        const endDate = wt.end ? new Date(wt.end) : null;
+        return acc + calculateWorkDuration(startDate, endDate);
+      }, 0);
       setTotalMinutes(total);
     }
-  }, []);
+  }, [workTimes]);
 
   const totalHours = Math.floor(totalMinutes / 60);
   const remainingMinutes = totalMinutes % 60;
@@ -63,8 +49,8 @@ const StatsPage = () => {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">作業時間統計</h1>
-        <Link href="/" className="text-blue-600 hover:underline">
-          戻る
+        <Link href="/daily" className="text-blue-600 hover:underline">
+          レポート作成ページに戻る
         </Link>
       </div>
 
@@ -78,12 +64,10 @@ const StatsPage = () => {
         <div className="p-6 bg-white border rounded-lg shadow-md text-center">
           <h2 className="text-xl font-semibold text-gray-600">最初の記録日</h2>
           <p className="text-4xl font-bold mt-2 text-gray-800">
-            {firstDate ? firstDate : '記録がありません'}
+            {firstDate ? firstDate.replace(/-/g, '/') : '記録がありません'}
           </p>
         </div>
       </div>
     </div>
   );
 };
-
-export default StatsPage;

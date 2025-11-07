@@ -19,7 +19,11 @@ const eslintConfig = [
           "argsIgnorePattern": "^_",
           "varsIgnorePattern": "^_"
         }
-      ]
+      ],
+      "@typescript-eslint/explicit-function-return-type": "warn",
+      "@typescript-eslint/no-explicit-any": "error",
+      "react-hooks/exhaustive-deps": "warn",
+      "react/jsx-key": "error",
     }
   },
   {
