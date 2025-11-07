@@ -1,5 +1,5 @@
-import PageClient from '../components/PageClient';
+import MeetingReportPage from '../components/report/MeetingReportPage';
 
-export default function MeetingReportPage() {
-  return <PageClient initialReportType="meeting" />;
+export default function MeetingPage() {
+  return <MeetingReportPage />;
 }

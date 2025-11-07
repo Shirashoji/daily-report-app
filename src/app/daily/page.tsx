@@ -1,5 +1,5 @@
-import PageClient from '../components/PageClient';
+import DailyReportPage from '../components/report/DailyReportPage';
 
-export default function DailyReportPage() {
-  return <PageClient initialReportType="daily" />;
+export default function DailyPage() {
+  return <DailyReportPage />;
 }
