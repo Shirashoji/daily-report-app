@@ -22,13 +22,24 @@ export default function DailyReportPage() {
   }, [session]);
 
 
-  const [startDate, setStartDate] = useState<Date>(new Date());
-  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [startDate, setStartDate] = useState<Date>(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  });
+  const [endDate, setEndDate] = useState<Date>(() => {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    return today;
+  });
 
   useEffect(() => {
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     setStartDate(today);
-    setEndDate(today);
+    const endOfTday = new Date();
+    endOfTday.setHours(23, 59, 59, 999);
+    setEndDate(endOfTday);
   }, []);
 
   const { model, handleSetModel } = useSettings();

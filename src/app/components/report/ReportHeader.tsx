@@ -33,9 +33,10 @@ export default function ReportHeader({
             value={formatDate(startDate)}
             onChange={(e) => {
               const dateString = e.target.value;
-              const utcDate = new Date(dateString + 'T00:00:00.000Z');
-              setStartDate(utcDate);
-              setEndDate(utcDate);
+              const date = new Date(dateString + 'T00:00:00.000Z');
+              setStartDate(date);
+              const endOfDay = new Date(dateString + 'T23:59:59.999Z');
+              setEndDate(endOfDay);
             }}
             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
           />
