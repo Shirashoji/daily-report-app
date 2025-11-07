@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 
-import { useWorkTime } from '../../hooks/useWorkTime';
 import { useSettings } from '../../hooks/useSettings';
 import DailyWorkTime from '../DailyWorkTime';
 import WorkTimeRecorder from '../WorkTimeRecorder';
@@ -22,7 +21,7 @@ export default function DailyReportPage() {
     }
   }, [session]);
 
-  const { workTimes } = useWorkTime();
+
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>(new Date());
 

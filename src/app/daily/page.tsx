@@ -1,5 +1,10 @@
 import DailyReportPage from '../components/report/DailyReportPage';
+import { WorkTimeProvider } from '../contexts/WorkTimeContext';
 
 export default function DailyPage() {
-  return <DailyReportPage />;
+  return (
+    <WorkTimeProvider>
+      <DailyReportPage />
+    </WorkTimeProvider>
+  );
 }
