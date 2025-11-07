@@ -1,5 +1,5 @@
-import MeetingReportPage from '../components/report/MeetingReportPage';
+import ReportPage from '../components/report/ReportPage';
 
 export default function MeetingPage() {
-  return <MeetingReportPage />;
+  return <ReportPage reportType="meeting" />;
 }

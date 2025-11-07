@@ -1,5 +1,5 @@
-import DailyReportPage from '../components/report/DailyReportPage';
+import ReportPage from '../components/report/ReportPage';
 
 export default function DailyPage() {
-  return <DailyReportPage />;
+  return <ReportPage reportType="daily" />;
 }

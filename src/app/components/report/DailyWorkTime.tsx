@@ -1,7 +1,7 @@
 'use client';
 
-import { useWorkTime } from '../hooks/useWorkTime';
-import { formatDate } from '../../lib/utils';
+import { useWorkTime } from '../../hooks/useWorkTime';
+import { formatDate } from '../../../lib/utils';
 
 const formatWorkTime = (date: Date) => {
   const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
