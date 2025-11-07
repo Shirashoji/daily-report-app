@@ -34,7 +34,7 @@ export default function GeneratedReportView({
     generateReport,
     copyToClipboard,
     setGeneratedText,
-  } = useReportGenerator({ commitHistory, model, workTimes, startDate, endDate });
+  } = useReportGenerator({ commits: commitHistory, model, workTimes, startDate, endDate });
 
   return (
     <div>

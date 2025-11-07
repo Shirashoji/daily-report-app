@@ -1,6 +1,6 @@
 // src/app/api/generate-report/route.ts
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import fs from 'fs/promises';
 import path from 'path';
 import { AppError, ValidationError } from '@/lib/errors';
@@ -27,10 +27,10 @@ interface ReportResponse {
   report: string;
 }
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 const formatDate = (date: Date): string => {
-  return date.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+  return date.toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').join('-');
 };
 
 const formatDuration = (totalMinutes: number): string => {
@@ -121,30 +121,26 @@ function createPrompt(reportType: ReportType, template: string, workTimeText: st
     const commonPrompt = `以下のテンプレート、作業時間、コミット履歴を元に、レポートを完成させてください。`;
 
     if (reportType === 'meeting') {
-        return `${commonPrompt}
-「## やったこと」のセクションは、コミット履歴を参考にMarkdown形式で具体的に記述してください。
+        return `${commonPrompt}\n「## やったこと」のセクションは、コミット履歴を参考にMarkdown形式で具体的に記述してください。
 作業時間は指定されたものをそのまま記載してください。
 
 ${template.replace('## 作業時間', workTimeText)}
 
 # コミット履歴
----
-${commits}
+---\n${commits}
 ---
 
 # 生成されるMTG資料`;
     }
 
     // Daily report
-    return `${commonPrompt}
-「# 作業内容」のセクションは、コミット履歴と作業時間中のメモを参考に、Markdown形式で具体的に記述してください。
+    return `${commonPrompt}\n「# 作業内容」のセクションは、コミット履歴と作業時間中のメモを参考に、Markdown形式で具体的に記述してください。
 その他のセクションは空欄のままで構いません。
 
 ${template.replace('# 作業予定', `${workTimeText}\n\n# 作業予定`)}
 
 # コミット履歴
----
-${commits}
+---\n${commits}
 ---
 
 # 生成される日報`;
@@ -171,13 +167,14 @@ async function generateReport(
   const workTimeText = generateWorkTimeText(workTimes, reportType, startDate, endDate);
   const prompt = createPrompt(reportType, processedTemplate, workTimeText, commits);
 
-  const model = genAI.getGenerativeModel({ model: modelName });
-  const result = await model.generateContent(prompt);
+  const result = await genAI.models.generateContent({
+    model: modelName,
+    contents: prompt,
+  });
   
-  const response = result.response;
-  const text = response.text();
+  const text = result.text;
 
-  return text;
+  return text || '';
 }
 
 function handleError(error: unknown, model?: string): NextResponse<ApiResponse<null>> {

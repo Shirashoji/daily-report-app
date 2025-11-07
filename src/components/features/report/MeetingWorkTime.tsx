@@ -2,14 +2,11 @@
 'use client';
 
 import { useWorkTime } from '@/hooks/useWorkTime';
+import { type WorkTime } from '@/contexts/WorkTimeContext';
 import { formatDate } from '@/lib/utils';
 import type { ReactElement } from 'react';
 
-interface WorkTime {
-  start: Date;
-  end: Date | null;
-  memo: string;
-}
+
 
 const groupWorkTimesByDay = (workTimes: WorkTime[]): Record<string, WorkTime[]> => {
   const grouped: Record<string, WorkTime[]> = {};
@@ -35,7 +32,7 @@ interface MeetingWorkTimeProps {
 export default function MeetingWorkTime({ startDate, endDate }: MeetingWorkTimeProps): ReactElement {
   const { workTimes, calculateTotalWorkDuration } = useWorkTime();
 
-  const filteredWorkTimes = workTimes.filter(wt => {
+  const filteredWorkTimes = workTimes.filter((wt: WorkTime) => {
     const wtStart = new Date(wt.start);
     return wtStart >= startDate && wtStart <= endDate;
   });

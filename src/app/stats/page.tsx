@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useWorkTime } from '@/hooks/useWorkTime';
+import { type WorkTime } from '@/contexts/WorkTimeContext';
 import { formatDate } from '@/lib/utils';
 import type { ReactElement } from 'react';
 
@@ -33,7 +34,7 @@ export default function StatsPage(): ReactElement {
       const firstEntry = new Date(workTimes[0].start);
       setFirstDate(formatDate(firstEntry));
 
-      const total = workTimes.reduce((acc, wt) => {
+      const total = workTimes.reduce((acc: number, wt: WorkTime) => {
         const startDate = new Date(wt.start);
         const endDate = wt.end ? new Date(wt.end) : null;
         return acc + calculateWorkDuration(startDate, endDate);

@@ -28,7 +28,7 @@ function handleError(error: unknown): NextResponse<ApiResponse<null>> {
   if (error instanceof AppError) {
     return NextResponse.json({ error: error.message, status: error.statusCode }, { status: error.statusCode });
   }
-  if (error instanceof GitHubAPIError && error.status === 404) {
+  if (error instanceof GitHubAPIError && error.statusCode === 404) {
     return NextResponse.json({ error: 'Repository not found. It might be a private repository you do not have access to, or the name is incorrect.', status: 404 }, { status: 404 });
   }
   return NextResponse.json({ error: 'An unexpected error occurred', status: 500 }, { status: 500 });

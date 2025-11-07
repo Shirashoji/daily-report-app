@@ -2,6 +2,7 @@
 'use client';
 
 import { useWorkTime } from '@/hooks/useWorkTime';
+import { type WorkTime } from '@/contexts/WorkTimeContext';
 import { formatDate, formatWorkTime, calculateWorkDuration } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import type { ReactElement } from 'react';
@@ -26,7 +27,7 @@ export default function DailyWorkTime({ startDate, endDate }: DailyWorkTimeProps
     calculateTotalWorkDuration,
   } = useWorkTime();
 
-  const dailyWorkTimes = workTimes.filter(wt => {
+  const dailyWorkTimes = workTimes.filter((wt: WorkTime) => {
     const wtStart = new Date(wt.start);
     return wtStart >= startDate && wtStart <= endDate;
   });
@@ -43,9 +44,9 @@ export default function DailyWorkTime({ startDate, endDate }: DailyWorkTimeProps
       </div>
       <ul className="space-y-2">
         {workTimes
-          .map((wt, originalIndex) => ({ ...wt, originalIndex }))
-          .filter(wt => new Date(wt.start) >= startDate && new Date(wt.start) <= endDate)
-          .map((wt) => (
+          .map((wt: WorkTime, originalIndex: number) => ({ ...wt, originalIndex }))
+          .filter((wt: WorkTime & { originalIndex: number }) => new Date(wt.start) >= startDate && new Date(wt.start) <= endDate)
+          .map((wt: WorkTime & { originalIndex: number }) => (
             <li key={wt.originalIndex} className="p-3 bg-gray-100 rounded-md">
               <div className="flex items-center justify-between mb-2">
                 {editingWorkTimeIndex === wt.originalIndex ? (

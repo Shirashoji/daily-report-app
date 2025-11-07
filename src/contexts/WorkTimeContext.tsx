@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 
-interface WorkTime {
+export interface WorkTime {
   start: Date;
   end: Date | null;
   memo: string;
@@ -15,7 +15,7 @@ interface RawWorkTime {
   memo: string;
 }
 
-interface WorkTimeContextType {
+export interface WorkTimeContextType {
   workTimes: WorkTime[];
   isWorking: boolean;
   currentMemo: string;
