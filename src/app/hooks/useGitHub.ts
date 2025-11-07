@@ -5,7 +5,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 async function fetchBranches(owner: string, repo: string, session: Session | null) {
   if (owner && repo && session) {
-    console.log(`Fetching branches for owner: ${owner}, repo: ${repo}`);
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/get-branches`, {
         method: 'POST',
