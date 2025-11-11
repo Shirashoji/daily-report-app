@@ -1,17 +1,19 @@
 // src/components/features/report/GitHubSettings.tsx
-'use client';
+"use client";
 
-import { useSession } from 'next-auth/react';
-import { useGitHub } from '@/hooks/useGitHub';
-import type { ReactElement } from 'react';
+import { useSession } from "next-auth/react";
+import { useGitHub } from "@/hooks/useGitHub";
+import type { ReactElement } from "react";
 
 /**
- * A component for configuring GitHub repository settings,
- * including owner, repository, and branch selection.
- * @component
+ * コミット履歴を取得するためのGitHubリポジトリ設定（オーナー、リポジトリ名、ブランチ）を行うコンポーネント。
+ * 入力された設定は`useGitHub`フックを通じて管理され、localStorageに保存されます。
+ * @returns {ReactElement} GitHubリポジトリ設定フォーム。
  */
 export default function GitHubSettings(): ReactElement {
+  // 認証セッション情報を取得
   const { data: session } = useSession();
+  // GitHub関連の状態と更新関数をカスタムフックから取得
   const {
     githubOwner,
     githubRepo,
@@ -28,7 +30,12 @@ export default function GitHubSettings(): ReactElement {
     <div className="space-y-4 mb-4 p-4 border rounded-md">
       <h3 className="text-lg font-medium">コミット取得設定</h3>
       <div>
-        <label htmlFor="github-owner" className="block text-sm font-medium text-gray-700">GitHub Owner:</label>
+        <label
+          htmlFor="github-owner"
+          className="block text-sm font-medium text-gray-700"
+        >
+          GitHub Owner:
+        </label>
         <input
           type="text"
           id="github-owner"
@@ -39,7 +46,12 @@ export default function GitHubSettings(): ReactElement {
         />
       </div>
       <div>
-        <label htmlFor="github-repo" className="block text-sm font-medium text-gray-700">GitHub Repo:</label>
+        <label
+          htmlFor="github-repo"
+          className="block text-sm font-medium text-gray-700"
+        >
+          GitHub Repo:
+        </label>
         <input
           type="text"
           id="github-repo"
@@ -51,7 +63,12 @@ export default function GitHubSettings(): ReactElement {
       </div>
 
       <div>
-        <label htmlFor="branch-select" className="block text-sm font-medium text-gray-700">Branch:</label>
+        <label
+          htmlFor="branch-select"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Branch:
+        </label>
         <select
           id="branch-select"
           value={selectedBranch}
@@ -60,15 +77,21 @@ export default function GitHubSettings(): ReactElement {
           disabled={branchesLoading || branches.length === 0}
         >
           <option value="all">All Branches</option>
-          {branches.map(branch => (
+          {branches.map((branch) => (
             <option key={branch} value={branch}>
               {branch}
             </option>
           ))}
         </select>
-        {branchesLoading && <p className="text-sm mt-1">ブランチを読み込み中...</p>}
-        {branchesError && <p className="text-red-500 text-sm mt-1">{branchesError}</p>}
+        {/* ブランチリストの読み込み中またはエラー時にメッセージを表示 */}
+        {branchesLoading && (
+          <p className="text-sm mt-1">ブランチを読み込み中...</p>
+        )}
+        {branchesError && (
+          <p className="text-red-500 text-sm mt-1">{branchesError}</p>
+        )}
       </div>
     </div>
   );
 }
+

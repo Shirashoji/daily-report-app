@@ -1,39 +1,66 @@
 // src/hooks/useReportGenerator.ts
-import { useState, useCallback } from 'react';
-import type { ReportType } from '@/types/report';
-import type { ApiResponse } from '@/types/api';
+import { useState, useCallback } from "react";
+import type { ReportType } from "@/types/report";
+import type { ApiResponse } from "@/types/api";
 
+/**
+ * 作業時間の情報を格納するインターフェース。
+ */
 interface WorkTime {
+  /** 作業開始日時。 */
   start: Date;
+  /** 作業終了日時。 */
   end: Date | null;
+  /** 作業内容のメモ。 */
   memo: string;
 }
 
+/**
+ * `useReportGenerator`フックに渡すパラメータの型定義。
+ */
 interface UseReportGeneratorParams {
+  /** レポートに含めるコミット履歴の文字列。 */
   commits: string;
+  /** レポート生成に使用するAIモデル名。 */
   model: string;
+  /** 作業時間のリスト。 */
   workTimes: WorkTime[];
+  /** レポート対象期間の開始日時。 */
   startDate: Date;
+  /** レポート対象期間の終了日時。 */
   endDate: Date;
 }
 
+/**
+ * レポート生成APIのレスポンスの型定義。
+ */
 interface ReportResponse {
+  /** 生成されたレポートのテキスト。 */
   report: string;
 }
 
+/**
+ * `useReportGenerator`フックが返す値の型定義。
+ */
 interface UseReportGeneratorReturn {
+  /** AIによって生成されたレポートのテキスト。 */
   generatedText: string;
+  /** レポート生成中の読み込み状態を示すフラグ。 */
   isLoading: boolean;
+  /** 発生したエラーメッセージ。 */
   error: string | null;
+  /** レポートを生成する非同期関数。 */
   generateReport: (reportType: ReportType) => Promise<void>;
+  /** 生成されたレポートをクリップボードにコピーする関数。 */
   copyToClipboard: () => Promise<void>;
+  /** 生成されたテキストを外部から設定する関数。 */
   setGeneratedText: (text: string) => void;
 }
 
 /**
- * Custom hook to generate a report using AI.
- * @param {UseReportGeneratorParams} params - The parameters for the hook.
- * @returns {UseReportGeneratorReturn} An object containing the generated text, loading state, error, and functions.
+ * コミット履歴や作業時間などの情報から、AIを使用してレポートを生成するためのカスタムフック。
+ * @param {UseReportGeneratorParams} params - レポート生成に必要なパラメータ。
+ * @returns {UseReportGeneratorReturn} 生成されたレポートテキスト、状態、および関連操作の関数を含むオブジェクト。
  */
 export function useReportGenerator({
   commits,
@@ -42,69 +69,96 @@ export function useReportGenerator({
   startDate,
   endDate,
 }: UseReportGeneratorParams): UseReportGeneratorReturn {
-  const [generatedText, setGeneratedText] = useState('');
+  // 生成されたレポートテキストを保持するstate
+  const [generatedText, setGeneratedText] = useState("");
+  // レポート生成中の読み込み状態を管理するstate
   const [isLoading, setIsLoading] = useState(false);
+  // エラーメッセージを保持するstate
   const [error, setError] = useState<string | null>(null);
 
-  const generateReport = useCallback(async (reportType: ReportType): Promise<void> => {
-    setIsLoading(true);
-    setError(null);
-    setGeneratedText('レポート生成中...');
+  /**
+   * APIにリクエストを送信し、レポートを生成する。
+   * @param {ReportType} reportType - 生成するレポートの種類（'daily' または 'meeting'）。
+   */
+  const generateReport = useCallback(
+    async (reportType: ReportType): Promise<void> => {
+      setIsLoading(true);
+      setError(null);
+      setGeneratedText("レポート生成中...");
 
-    let customVariables: Record<string, string> = {};
-    try {
-      const savedCustomVarsJson = localStorage.getItem('customVariables');
-      if (savedCustomVarsJson) {
-        customVariables = JSON.parse(savedCustomVarsJson);
+      // localStorageからカスタム変数を読み込む
+      let customVariables: Record<string, string> = {};
+      try {
+        const savedCustomVarsJson = localStorage.getItem("customVariables");
+        if (savedCustomVarsJson) {
+          customVariables = JSON.parse(savedCustomVarsJson);
+        }
+      } catch (e) {
+        console.error(
+          "localStorageからカスタム変数の解析中にエラーが発生しました:",
+          e
+        );
       }
-    } catch (e) {
-      console.error('Error parsing customVariables from localStorage:', e);
-    }
 
-    try {
-      const response = await fetch('/api/generate-report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          commits,
-          model,
-          reportType,
-          workTimes: workTimes.filter(wt => {
-            const wtStart = new Date(wt.start);
-            return wtStart >= startDate && wtStart <= endDate;
+      try {
+        const response = await fetch("/api/generate-report", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            commits,
+            model,
+            reportType,
+            // 指定された期間内の作業時間のみをフィルタリング
+            workTimes: workTimes.filter((wt) => {
+              const wtStart = new Date(wt.start);
+              return wtStart >= startDate && wtStart <= endDate;
+            }),
+            startDate,
+            endDate,
+            customVariables,
           }),
-          startDate,
-          endDate,
-          customVariables,
-        }),
-      });
+        });
 
-      const data: ApiResponse<ReportResponse> = await response.json();
+        const data: ApiResponse<ReportResponse> = await response.json();
 
-      if (!response.ok || data.error) {
-        throw new Error(data.error || 'Failed to generate report');
+        if (!response.ok || data.error) {
+          throw new Error(data.error || "レポートの生成に失敗しました。");
+        }
+
+        setGeneratedText(data.data?.report || "");
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "不明なエラーが発生しました。";
+        setError(message);
+        setGeneratedText(`レポートの生成に失敗しました。: ${message}`);
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [commits, model, workTimes, startDate, endDate]
+  );
 
-      setGeneratedText(data.data?.report || '');
-    } catch (err) {
-      const message = err instanceof Error ? err.message : '不明なエラー';
-      setError(message);
-      setGeneratedText(`レポートの生成に失敗しました。: ${message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [commits, model, workTimes, startDate, endDate]);
-
+  /**
+   * 生成されたレポートテキストをクリップボードにコピーする。
+   */
   const copyToClipboard = async (): Promise<void> => {
     if (!generatedText) return;
     try {
       await navigator.clipboard.writeText(generatedText);
-      alert('レポートをクリップボードにコピーしました。');
+      alert("レポートをクリップボードにコピーしました。");
     } catch (err) {
-      console.error('Failed to copy to clipboard:', err);
-      alert('クリップボードへのコピーに失敗しました。');
+      console.error("クリップボードへのコピーに失敗しました:", err);
+      alert("クリップボードへのコピーに失敗しました。");
     }
   };
 
-  return { generatedText, isLoading, error, generateReport, copyToClipboard, setGeneratedText };
+  return {
+    generatedText,
+    isLoading,
+    error,
+    generateReport,
+    copyToClipboard,
+    setGeneratedText,
+  };
 }
+

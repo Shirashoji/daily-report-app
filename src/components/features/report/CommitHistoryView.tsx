@@ -1,22 +1,34 @@
 // src/components/features/report/CommitHistoryView.tsx
-'use client';
+"use client";
 
-import GitHubSettings from './GitHubSettings';
-import CommitHistoryList from './CommitHistoryList';
-import type { ReactElement } from 'react';
+import GitHubSettings from "./GitHubSettings";
+import CommitHistoryList from "./CommitHistoryList";
+import type { ReactElement } from "react";
 
+/**
+ * `CommitHistoryView`コンポーネントのプロパティの型定義。
+ */
 interface CommitHistoryViewProps {
+  /** 表示するコミット履歴の文字列。 */
   commitHistory: string;
+  /** データの読み込み状態を示すフラグ。 */
   isLoading: boolean;
+  /** 発生したエラーオブジェクト。 */
   error: Error | null;
 }
 
 /**
- * A component to display the commit history view, including settings and the list of commits.
- * It also handles loading and error states for the commit history.
- * @component
+ * コミット履歴の表示エリア全体を管理するコンポーネント。
+ * GitHubリポジトリ設定コンポーネントとコミット履歴リストを含みます。
+ * また、データの読み込み中やエラー発生時の表示も制御します。
+ * @param {CommitHistoryViewProps} props - コンポーネントのプロパティ。
+ * @returns {ReactElement} コミット履歴ビューのコンポーネント。
  */
-export default function CommitHistoryView({ commitHistory, isLoading, error }: CommitHistoryViewProps): ReactElement {
+export default function CommitHistoryView({
+  commitHistory,
+  isLoading,
+  error,
+}: CommitHistoryViewProps): ReactElement {
   return (
     <div>
       <div className="border-b border-gray-200">
@@ -32,8 +44,11 @@ export default function CommitHistoryView({ commitHistory, isLoading, error }: C
         <GitHubSettings />
         {isLoading && <p>コミット履歴を読み込み中...</p>}
         {error && <p className="text-red-500">エラー: {error.message}</p>}
-        {!isLoading && !error && <CommitHistoryList commitHistory={commitHistory} />}
+        {!isLoading && !error && (
+          <CommitHistoryList commitHistory={commitHistory} />
+        )}
       </div>
     </div>
   );
 }
+

@@ -1,23 +1,32 @@
 // src/components/features/report/GeneratedReportView.tsx
-'use client';
+"use client";
 
-import { useReportGenerator } from '@/hooks/useReportGenerator';
-import { useWorkTime } from '@/hooks/useWorkTime';
-import { Button } from '@/components/ui/Button';
-import type { ReportType } from '@/types/report';
-import type { ReactElement } from 'react';
+import { useReportGenerator } from "@/hooks/useReportGenerator";
+import { useWorkTime } from "@/hooks/useWorkTime";
+import { Button } from "@/components/ui/Button";
+import type { ReportType } from "@/types/report";
+import type { ReactElement } from "react";
 
+/**
+ * `GeneratedReportView`コンポーネントのプロパティの型定義。
+ */
 interface GeneratedReportViewProps {
+  /** 初期表示するレポートの種類 ('daily' または 'meeting')。 */
   initialReportType: ReportType;
+  /** レポート生成の元となるコミット履歴の文字列。 */
   commitHistory: string;
+  /** レポート生成に使用するAIモデル名。 */
   model: string;
+  /** レポート対象期間の開始日時。 */
   startDate: Date;
+  /** レポート対象期間の終了日時。 */
   endDate: Date;
 }
 
 /**
- * A component for displaying the generated report and interacting with the report generator.
- * @component
+ * AIによって生成されたレポートを表示し、ユーザーとの対話（再生成、コピー）を担うコンポーネント。
+ * @param {GeneratedReportViewProps} props - コンポーネントのプロパティ。
+ * @returns {ReactElement} 生成されたレポートの表示と操作ボタンを含むUI。
  */
 export default function GeneratedReportView({
   initialReportType,
@@ -26,7 +35,9 @@ export default function GeneratedReportView({
   startDate,
   endDate,
 }: GeneratedReportViewProps): ReactElement {
+  // 作業時間コンテキストから作業時間のリストを取得
   const { workTimes } = useWorkTime();
+  // レポート生成関連のフックから状態と関数を取得
   const {
     generatedText,
     isLoading,
@@ -34,11 +45,19 @@ export default function GeneratedReportView({
     generateReport,
     copyToClipboard,
     setGeneratedText,
-  } = useReportGenerator({ commits: commitHistory, model, workTimes, startDate, endDate });
+  } = useReportGenerator({
+    commits: commitHistory,
+    model,
+    workTimes,
+    startDate,
+    endDate,
+  });
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-2">生成された{initialReportType === 'daily' ? '日報' : 'MTG資料'}</h2>
+      <h2 className="text-xl font-semibold mb-2">
+        生成された{initialReportType === "daily" ? "日報" : "MTG資料"}
+      </h2>
       <textarea
         className="w-full h-96 p-2 border rounded-md bg-gray-50"
         value={generatedText}
@@ -51,7 +70,8 @@ export default function GeneratedReportView({
           isLoading={isLoading}
           disabled={isLoading}
         >
-          {initialReportType === 'daily' ? '日報を生成' : 'MTG資料を生成'}
+          {/* レポートタイプに応じてボタンのテキストを変更 */}
+          {initialReportType === "daily" ? "日報を生成" : "MTG資料を生成"}
         </Button>
         <Button
           variant="secondary"

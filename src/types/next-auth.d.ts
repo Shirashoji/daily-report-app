@@ -1,26 +1,41 @@
-// @ts-expect-error - Module augmentation
-import { DefaultSession } from "next-auth"
+// @ts-expect-error - モジュールの拡張のため
+import { DefaultSession } from "next-auth";
 
 declare module "next-auth" {
   /**
-   * Augment the built-in session types with our custom properties.
+   * NextAuthの組み込みセッション型をカスタムプロパティで拡張します。
    * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
    */
   interface Session {
-    accessToken?: string
-    error?: string
+    /**
+     * GitHub APIへのアクセスに使用するアクセストークン。
+     */
+    accessToken?: string;
+    /**
+     * 認証プロセスでエラーが発生した場合のエラー情報。
+     */
+    error?: string;
+    /**
+     * ユーザー情報。DefaultSessionのuser型を拡張しています。
+     */
     user: {
-      id?: string
-    } & DefaultSession["user"]
+      /**
+       * ユーザーのGitHub ID。
+       */
+      id?: string;
+    } & DefaultSession["user"];
   }
 }
 
 declare module "next-auth/jwt" {
   /**
-   * Augment the built-in JWT types with our custom properties.
+   * NextAuthの組み込みJWT型をカスタムプロパティで拡張します。
    * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
    */
   interface JWT {
-    accessToken?: string
+    /**
+     * JWTに含まれるアクセストークン。
+     */
+    accessToken?: string;
   }
 }

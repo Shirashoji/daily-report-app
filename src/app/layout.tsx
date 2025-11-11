@@ -1,25 +1,30 @@
 // src/app/layout.tsx
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css';
-import AuthSessionProvider from '@/components/common/AuthSessionProvider';
-import Header from '@/components/common/Header';
-import { WorkTimeProvider } from '@/contexts/WorkTimeContext';
-import type { ReactElement } from 'react';
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import AuthSessionProvider from "@/components/common/AuthSessionProvider";
+import Header from "@/components/common/Header";
+import { WorkTimeProvider } from "@/contexts/WorkTimeContext";
+import type { ReactElement } from "react";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
+/**
+ * Next.jsアプリケーションのメタデータ。
+ * ページのタイトルや説明などを定義します。
+ */
 export const metadata: Metadata = {
-  title: 'Daily Report App',
-  description: 'An application to generate daily and meeting reports from GitHub commits.',
+  title: "日報・議事録作成支援アプリ",
+  description:
+    "GitHubのコミット履歴から日報や議事録のドラフトを自動生成するアプリケーションです。",
 };
 
 /**
- * The root layout for the application.
- * It sets up the fonts and wraps the application in necessary providers.
- * @param {object} props - The component's props.
- * @param {React.ReactNode} props.children - The component's children.
- * @returns {React.ReactElement} The root layout.
+ * アプリケーションのルートレイアウト。
+ * 全ページで共通のHTML構造、フォント、およびコンテキストプロバイダーを設定します。
+ * @param {{ children: React.ReactNode }} props - コンポーネントのプロパティ。
+ * @param {React.ReactNode} props.children - Next.jsによって渡される子コンポーネント（各ページ）。
+ * @returns {ReactElement} アプリケーション全体のレイアウト。
  */
 export default function RootLayout({
   children,
@@ -29,7 +34,9 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className={inter.className}>
+        {/* NextAuth.jsのセッション管理を有効にするプロバイダー */}
         <AuthSessionProvider>
+          {/* 作業時間の状態管理を行うプロバイダー */}
           <WorkTimeProvider>
             <Header />
             <main>{children}</main>
