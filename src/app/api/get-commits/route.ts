@@ -53,12 +53,14 @@ export async function POST(
 
     if (!owner || !repo) {
       throw new ValidationError(
-        "リクエストボディには`owner`と`repo`が必要です。"
+        "リクエストボディには`owner`と`repo`が必要です。",
+        "owner/repo"
       );
     }
     if (!startDate || !endDate) {
       throw new ValidationError(
-        "リクエストボディには`startDate`と`endDate`が必要です。"
+        "リクエストボディには`startDate`と`endDate`が必要です。",
+        "date"
       );
     }
 

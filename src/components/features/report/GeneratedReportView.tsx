@@ -5,6 +5,7 @@ import { useReportGenerator } from "@/hooks/useReportGenerator";
 import { useWorkTime } from "@/hooks/useWorkTime";
 import { Button } from "@/components/ui/Button";
 import type { ReportType } from "@/types/report";
+import type { CommitData } from "@/types/github";
 import type { ReactElement } from "react";
 
 /**
@@ -13,8 +14,8 @@ import type { ReactElement } from "react";
 interface GeneratedReportViewProps {
   /** 初期表示するレポートの種類 ('daily' または 'meeting')。 */
   initialReportType: ReportType;
-  /** レポート生成の元となるコミット履歴の文字列。 */
-  commitHistory: string;
+  /** レポート生成の元となるコミットデータの配列。 */
+  commits: CommitData[];
   /** レポート生成に使用するAIモデル名。 */
   model: string;
   /** レポート対象期間の開始日時。 */
@@ -30,7 +31,7 @@ interface GeneratedReportViewProps {
  */
 export default function GeneratedReportView({
   initialReportType,
-  commitHistory,
+  commits,
   model,
   startDate,
   endDate,
@@ -46,7 +47,7 @@ export default function GeneratedReportView({
     copyToClipboard,
     setGeneratedText,
   } = useReportGenerator({
-    commits: commitHistory,
+    commits, // Changed from commitHistory
     model,
     workTimes,
     startDate,
@@ -68,7 +69,7 @@ export default function GeneratedReportView({
         <Button
           onClick={() => generateReport(initialReportType)}
           isLoading={isLoading}
-          disabled={isLoading}
+          disabled={isLoading || commits.length === 0} // Disable if no commits
         >
           {/* レポートタイプに応じてボタンのテキストを変更 */}
           {initialReportType === "daily" ? "日報を生成" : "MTG資料を生成"}

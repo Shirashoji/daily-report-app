@@ -3,6 +3,8 @@ import { useState, useCallback } from "react";
 import type { ReportType } from "@/types/report";
 import type { ApiResponse } from "@/types/api";
 
+import type { CommitData } from "@/types/github";
+
 /**
  * 作業時間の情報を格納するインターフェース。
  */
@@ -19,8 +21,8 @@ interface WorkTime {
  * `useReportGenerator`フックに渡すパラメータの型定義。
  */
 interface UseReportGeneratorParams {
-  /** レポートに含めるコミット履歴の文字列。 */
-  commits: string;
+  /** レポートに含めるコミットデータの配列。 */
+  commits: CommitData[];
   /** レポート生成に使用するAIモデル名。 */
   model: string;
   /** 作業時間のリスト。 */

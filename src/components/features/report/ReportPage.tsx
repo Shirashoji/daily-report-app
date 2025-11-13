@@ -86,20 +86,18 @@ export default function ReportPage({ reportType }: ReportPageProps): ReactElemen
   // useCommitHistoryフックに渡すパラメータをメモ化
   const commitHistoryParams = useMemo(
     () => ({
-      session,
       owner: githubOwner,
       repo: githubRepo,
       branch: selectedBranch,
       startDate,
       endDate,
-      reportType,
     }),
-    [session, githubOwner, githubRepo, selectedBranch, startDate, endDate, reportType]
+    [githubOwner, githubRepo, selectedBranch, startDate, endDate]
   );
 
   // コミット履歴を取得
   const {
-    commitHistory,
+    commits,
     isLoading: isLoadingCommits,
     error: commitError,
   } = useCommitHistory(commitHistoryParams);
@@ -145,7 +143,7 @@ export default function ReportPage({ reportType }: ReportPageProps): ReactElemen
         {/* コミット履歴表示エリア */}
         <ErrorBoundary>
           <CommitHistoryView
-            commitHistory={commitHistory}
+            commits={commits}
             isLoading={isLoadingCommits}
             error={commitError}
           />
@@ -154,7 +152,7 @@ export default function ReportPage({ reportType }: ReportPageProps): ReactElemen
         <ErrorBoundary>
           <GeneratedReportView
             initialReportType={reportType}
-            commitHistory={commitHistory}
+            commits={commits}
             model={model}
             startDate={startDate}
             endDate={endDate}

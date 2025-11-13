@@ -4,13 +4,14 @@
 import GitHubSettings from "./GitHubSettings";
 import CommitHistoryList from "./CommitHistoryList";
 import type { ReactElement } from "react";
+import type { CommitData } from "@/types/github";
 
 /**
  * `CommitHistoryView`コンポーネントのプロパティの型定義。
  */
 interface CommitHistoryViewProps {
-  /** 表示するコミット履歴の文字列。 */
-  commitHistory: string;
+  /** 表示するコミットデータの配列。 */
+  commits: CommitData[];
   /** データの読み込み状態を示すフラグ。 */
   isLoading: boolean;
   /** 発生したエラーオブジェクト。 */
@@ -25,7 +26,7 @@ interface CommitHistoryViewProps {
  * @returns {ReactElement} コミット履歴ビューのコンポーネント。
  */
 export default function CommitHistoryView({
-  commitHistory,
+  commits,
   isLoading,
   error,
 }: CommitHistoryViewProps): ReactElement {
@@ -45,7 +46,7 @@ export default function CommitHistoryView({
         {isLoading && <p>コミット履歴を読み込み中...</p>}
         {error && <p className="text-red-500">エラー: {error.message}</p>}
         {!isLoading && !error && (
-          <CommitHistoryList commitHistory={commitHistory} />
+          <CommitHistoryList commits={commits} />
         )}
       </div>
     </div>

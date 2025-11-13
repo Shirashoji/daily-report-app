@@ -7,6 +7,8 @@ import { AppError, ValidationError } from "@/lib/errors";
 import type { ApiResponse } from "@/types/api";
 import type { ReportType } from "@/types/report";
 
+import type { CommitData } from "@/types/github";
+
 /**
  * 作業時間の情報を格納するインターフェース。
  */
@@ -20,7 +22,7 @@ interface WorkTime {
  * レポート生成APIへのリクエストボディの型定義。
  */
 interface RequestBody {
-  commits: string;
+  commits: CommitData[];
   model: string;
   reportType: ReportType;
   workTimes: WorkTime[];
@@ -220,8 +222,17 @@ function createPrompt(
   reportType: ReportType,
   template: string,
   workTimeText: string,
-  commits: string
+  commits: CommitData[]
 ): string {
+  const commitsText = commits
+    .map(
+      (c) =>
+        `${c.sha} - ${c.author}, ${new Date(c.date).toLocaleString(
+          "ja-JP"
+        )} : ${c.message}`
+    )
+    .join("\n");
+
   const commonPrompt = `以下のテンプレート、作業時間、コミット履歴を元に、レポートを完成させてください。`;
 
   if (reportType === "meeting") {
@@ -231,8 +242,7 @@ function createPrompt(
 ${template.replace("## 作業時間", workTimeText)}
 
 # コミット履歴
----\n${commits}
----
+---\n${commitsText}\n---
 
 # 生成されるMTG資料`;
   }
@@ -244,15 +254,14 @@ ${template.replace("## 作業時間", workTimeText)}
 ${template.replace("# 作業予定", `${workTimeText}\n\n# 作業予定`)}
 
 # コミット履歴
----\n${commits}
----
+---\n${commitsText}\n---
 
 # 生成される日報`;
 }
 
 /**
  * レポート生成のメインロジック。テンプレート読み込み、プロンプト作成、AI実行までを行います。
- * @param commits - コミット履歴。
+ * @param commits - コミットデータの配列。
  * @param modelName - 使用するAIモデル名。
  * @param reportType - レポートの種類。
  * @param workTimes - 作業時間のリスト。
@@ -262,7 +271,7 @@ ${template.replace("# 作業予定", `${workTimeText}\n\n# 作業予定`)}
  * @returns 生成されたレポート文字列。
  */
 async function generateReport(
-  commits: string,
+  commits: CommitData[],
   modelName: string,
   reportType: ReportType,
   workTimes: WorkTime[],
