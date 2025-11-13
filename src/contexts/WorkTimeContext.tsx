@@ -261,27 +261,48 @@ export function WorkTimeProvider({
    */
   const importWorkTimes = (jsonString: string): void => {
     try {
-      const parsed: WorkTime[] = JSON.parse(jsonString).map(
+      const rawData: unknown = JSON.parse(jsonString);
+
+      if (!Array.isArray(rawData)) {
+        throw new Error("データは配列形式である必要があります。");
+      }
+
+      const isValidData = rawData.every((item: unknown) => {
+        if (typeof item !== "object" || item === null) return false;
+        const wt = item as Partial<RawWorkTime>;
+        return (
+          typeof wt.start === "string" &&
+          (typeof wt.end === "string" || wt.end === null) &&
+          typeof wt.memo === "string" &&
+          !isNaN(new Date(wt.start).getTime()) &&
+          (wt.end === null || (wt.end && !isNaN(new Date(wt.end).getTime())))
+        );
+      });
+
+      if (!isValidData) {
+        throw new Error("無効なデータ形式です。");
+      }
+
+      const parsed: WorkTime[] = (rawData as RawWorkTime[]).map(
         (wt: RawWorkTime) => ({
           start: new Date(wt.start),
           end: wt.end ? new Date(wt.end) : null,
           memo: wt.memo || "",
         })
       );
-      if (
-        !Array.isArray(parsed) ||
-        parsed.some((wt: any) => !(new Date(wt.start) instanceof Date))
-      ) {
-        throw new Error("無効なJSON形式です。");
-      }
+
       setWorkTimes(parsed);
       const lastWorkTime = parsed[parsed.length - 1];
       setIsWorking(lastWorkTime && lastWorkTime.end === null);
       alert("作業時間データをインポートしました。");
     } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "不明なエラーが発生しました。";
       console.error("作業時間のインポート中にエラーが発生しました:", error);
       alert(
-        "作業時間データのインポートに失敗しました。JSONの形式を確認してください。"
+        `作業時間データのインポートに失敗しました。${message}`
       );
     }
   };
