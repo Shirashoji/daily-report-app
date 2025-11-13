@@ -52,10 +52,6 @@ export default function ReportPage({ reportType }: ReportPageProps): ReactElemen
   const { model, handleSetModel: onModelChange } = useSettings();
   const { githubOwner, githubRepo, selectedBranch } = useGitHub(session);
 
-  // レポートの対象期間を管理するstate
-  const [startDate, setStartDate] = useState<Date>(new Date());
-  const [endDate, setEndDate] = useState<Date>(new Date());
-
   // 認証セッションでエラーが返された場合のアラート表示とサインアウト処理
   useEffect(() => {
     if (session?.error) {
@@ -64,35 +60,14 @@ export default function ReportPage({ reportType }: ReportPageProps): ReactElemen
     }
   }, [session]);
 
-  // レポートの種類に応じて、対象期間の初期値を設定
-  useEffect(() => {
-    if (reportType === "daily") {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      setStartDate(today);
-      const endOfDay = new Date();
-      endOfDay.setHours(23, 59, 59, 999);
-      setEndDate(endOfDay);
-    } else {
-      // meetingの場合は過去7日間をデフォルト期間とする
-      const today = new Date();
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(today.getDate() - 6);
-      setStartDate(sevenDaysAgo);
-      setEndDate(today);
-    }
-  }, [reportType]);
-
   // useCommitHistoryフックに渡すパラメータをメモ化
   const commitHistoryParams = useMemo(
     () => ({
       owner: githubOwner,
       repo: githubRepo,
       branch: selectedBranch,
-      startDate,
-      endDate,
     }),
-    [githubOwner, githubRepo, selectedBranch, startDate, endDate]
+    [githubOwner, githubRepo, selectedBranch]
   );
 
   // コミット履歴を取得
@@ -120,21 +95,13 @@ export default function ReportPage({ reportType }: ReportPageProps): ReactElemen
       {/* 記録された作業時間の表示エリア */}
       <div className="mb-8 p-4 border rounded-md">
         <ErrorBoundary>
-          {reportType === "daily" ? (
-            <DailyWorkTime startDate={startDate} endDate={endDate} />
-          ) : (
-            <MeetingWorkTime startDate={startDate} endDate={endDate} />
-          )}
+          {reportType === "daily" ? <DailyWorkTime /> : <MeetingWorkTime />}
         </ErrorBoundary>
       </div>
 
       {/* レポート設定ヘッダー（日付・モデル選択） */}
       <ReportHeader
         initialReportType={reportType}
-        startDate={startDate}
-        endDate={endDate}
-        setStartDate={setStartDate}
-        setEndDate={setEndDate}
         model={model}
         handleSetModel={handleSetModel}
       />
@@ -154,8 +121,6 @@ export default function ReportPage({ reportType }: ReportPageProps): ReactElemen
             initialReportType={reportType}
             commits={commits}
             model={model}
-            startDate={startDate}
-            endDate={endDate}
           />
         </ErrorBoundary>
       </div>

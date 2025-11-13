@@ -2,6 +2,7 @@
 "use client";
 
 import { useWorkTime } from "@/hooks/useWorkTime";
+import { useDateContext } from "@/contexts/DateContext";
 import { type WorkTime } from "@/contexts/WorkTimeContext";
 import {
   formatDate,
@@ -12,24 +13,11 @@ import { Button } from "@/components/ui/Button";
 import type { ReactElement } from "react";
 
 /**
- * `DailyWorkTime`コンポーネントのプロパティの型定義。
- */
-interface DailyWorkTimeProps {
-  /** 表示対象の開始日時。 */
-  startDate: Date;
-  /** 表示対象の終了日時。 */
-  endDate: Date;
-}
-
-/**
  * 指定された一日の作業時間エントリを表示し、管理（編集・削除）するためのコンポーネント。
- * @param {DailyWorkTimeProps} props - コンポーネントのプロパティ。
  * @returns {ReactElement} 日々の作業時間を表示・管理するUI。
  */
-export default function DailyWorkTime({
-  startDate,
-  endDate,
-}: DailyWorkTimeProps): ReactElement {
+export default function DailyWorkTime(): ReactElement {
+  const { startDate, endDate } = useDateContext();
   const {
     workTimes,
     editingWorkTimeIndex,

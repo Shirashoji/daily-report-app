@@ -18,10 +18,6 @@ interface GeneratedReportViewProps {
   commits: CommitData[];
   /** レポート生成に使用するAIモデル名。 */
   model: string;
-  /** レポート対象期間の開始日時。 */
-  startDate: Date;
-  /** レポート対象期間の終了日時。 */
-  endDate: Date;
 }
 
 /**
@@ -33,8 +29,6 @@ export default function GeneratedReportView({
   initialReportType,
   commits,
   model,
-  startDate,
-  endDate,
 }: GeneratedReportViewProps): ReactElement {
   // 作業時間コンテキストから作業時間のリストを取得
   const { workTimes } = useWorkTime();
@@ -47,11 +41,9 @@ export default function GeneratedReportView({
     copyToClipboard,
     setGeneratedText,
   } = useReportGenerator({
-    commits, // Changed from commitHistory
+    commits,
     model,
     workTimes,
-    startDate,
-    endDate,
   });
 
   return (

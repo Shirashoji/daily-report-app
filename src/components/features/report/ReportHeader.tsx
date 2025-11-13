@@ -1,6 +1,7 @@
 // src/components/features/report/ReportHeader.tsx
 "use client";
 
+import { useDateContext } from "@/contexts/DateContext";
 import { formatDate } from "@/lib/utils";
 import { useGeminiModels } from "@/hooks/useGeminiModels";
 import type { ReportType } from "@/types/report";
@@ -12,14 +13,6 @@ import type { ReactElement } from "react";
 interface ReportHeaderProps {
   /** レポートの種類 ('daily' または 'meeting')。 */
   initialReportType: ReportType;
-  /** レポート対象期間の開始日時。 */
-  startDate: Date;
-  /** レポート対象期間の終了日時。 */
-  endDate: Date;
-  /** 開始日時を更新する関数。 */
-  setStartDate: (date: Date) => void;
-  /** 終了日時を更新する関数。 */
-  setEndDate: (date: Date) => void;
   /** 現在選択されているAIモデル名。 */
   model: string;
   /** AIモデルを設定する関数。 */
@@ -34,13 +27,10 @@ interface ReportHeaderProps {
  */
 export default function ReportHeader({
   initialReportType,
-  startDate,
-  endDate,
-  setStartDate,
-  setEndDate,
   model,
   handleSetModel,
 }: ReportHeaderProps): ReactElement {
+  const { startDate, endDate, setStartDate, setEndDate } = useDateContext();
   // 利用可能なGeminiモデルのリストを取得するためのカスタムフック
   const { models, isLoading, error } = useGeminiModels();
 
@@ -61,9 +51,9 @@ export default function ReportHeader({
             value={formatDate(startDate)}
             onChange={(e) => {
               // 選択された日付で開始日と終了日を更新（同日の00:00:00から23:59:59まで）
-              const date = new Date(e.target.value + "T00:00:00Z");
+              const date = new Date(e.target.value + "T00:00:00");
               setStartDate(date);
-              setEndDate(new Date(e.target.value + "T23:59:59Z"));
+              setEndDate(new Date(e.target.value + "T23:59:59"));
             }}
             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
           />
@@ -84,7 +74,7 @@ export default function ReportHeader({
               id="start-date-select"
               value={formatDate(startDate)}
               onChange={(e) =>
-                setStartDate(new Date(e.target.value + "T00:00:00Z"))
+                setStartDate(new Date(e.target.value + "T00:00:00"))
               }
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
             />
@@ -101,7 +91,7 @@ export default function ReportHeader({
               id="end-date-select"
               value={formatDate(endDate)}
               onChange={(e) =>
-                setEndDate(new Date(e.target.value + "T23:59:59Z"))
+                setEndDate(new Date(e.target.value + "T23:59:59"))
               }
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
             />

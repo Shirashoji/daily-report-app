@@ -2,6 +2,7 @@
 "use client";
 
 import { useWorkTime } from "@/hooks/useWorkTime";
+import { useDateContext } from "@/contexts/DateContext";
 import { type WorkTime } from "@/contexts/WorkTimeContext";
 import { formatDate } from "@/lib/utils";
 import type { ReactElement } from "react";
@@ -26,24 +27,11 @@ const groupWorkTimesByDay = (
 };
 
 /**
- * `MeetingWorkTime`コンポーネントのプロパティの型定義。
- */
-interface MeetingWorkTimeProps {
-  /** 表示対象期間の開始日時。 */
-  startDate: Date;
-  /** 表示対象期間の終了日時。 */
-  endDate: Date;
-}
-
-/**
  * MTG資料用に、指定された期間内の作業時間を日付ごとに集計して表示するコンポーネント。
- * @param {MeetingWorkTimeProps} props - コンポーネントのプロパティ。
  * @returns {ReactElement} 日付ごとの合計作業時間をリスト表示するUI。
  */
-export default function MeetingWorkTime({
-  startDate,
-  endDate,
-}: MeetingWorkTimeProps): ReactElement {
+export default function MeetingWorkTime(): ReactElement {
+  const { startDate, endDate } = useDateContext();
   const { workTimes, calculateTotalWorkDuration } = useWorkTime();
 
   // 指定された日付範囲内の作業記録のみをフィルタリング

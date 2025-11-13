@@ -1,8 +1,8 @@
 // src/hooks/useReportGenerator.ts
 import { useState, useCallback } from "react";
+import { useDateContext } from "@/contexts/DateContext";
 import type { ReportType } from "@/types/report";
 import type { ApiResponse } from "@/types/api";
-
 import type { CommitData } from "@/types/github";
 
 /**
@@ -27,10 +27,6 @@ interface UseReportGeneratorParams {
   model: string;
   /** 作業時間のリスト。 */
   workTimes: WorkTime[];
-  /** レポート対象期間の開始日時。 */
-  startDate: Date;
-  /** レポート対象期間の終了日時。 */
-  endDate: Date;
 }
 
 /**
@@ -68,9 +64,8 @@ export function useReportGenerator({
   commits,
   model,
   workTimes,
-  startDate,
-  endDate,
 }: UseReportGeneratorParams): UseReportGeneratorReturn {
+  const { startDate, endDate } = useDateContext();
   // 生成されたレポートテキストを保持するstate
   const [generatedText, setGeneratedText] = useState("");
   // レポート生成中の読み込み状態を管理するstate

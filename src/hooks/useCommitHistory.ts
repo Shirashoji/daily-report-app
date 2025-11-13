@@ -1,5 +1,6 @@
 // src/hooks/useCommitHistory.ts
 import { useState, useEffect, useCallback } from "react";
+import { useDateContext } from "@/contexts/DateContext";
 import type { ApiResponse } from "@/types/api";
 import type { CommitData } from "@/types/github";
 
@@ -10,8 +11,6 @@ interface UseCommitHistoryParams {
   owner: string;
   repo: string;
   branch: string;
-  startDate: Date;
-  endDate: Date;
 }
 
 /**
@@ -34,9 +33,8 @@ export function useCommitHistory({
   owner,
   repo,
   branch,
-  startDate,
-  endDate,
 }: UseCommitHistoryParams): UseCommitHistoryReturn {
+  const { startDate, endDate } = useDateContext();
   const [commits, setCommits] = useState<CommitData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
