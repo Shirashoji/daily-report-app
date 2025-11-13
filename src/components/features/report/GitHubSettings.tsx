@@ -1,19 +1,16 @@
 // src/components/features/report/GitHubSettings.tsx
 "use client";
 
-import { useSession } from "next-auth/react";
-import { useGitHub } from "@/hooks/useGitHub";
+import { useGitHubContext } from "@/contexts/GitHubContext";
 import type { ReactElement } from "react";
 
 /**
  * コミット履歴を取得するためのGitHubリポジトリ設定（オーナー、リポジトリ名、ブランチ）を行うコンポーネント。
- * 入力された設定は`useGitHub`フックを通じて管理され、localStorageに保存されます。
+ * 入力された設定は`useGitHubContext`を通じて管理され、localStorageに保存されます。
  * @returns {ReactElement} GitHubリポジトリ設定フォーム。
  */
 export default function GitHubSettings(): ReactElement {
-  // 認証セッション情報を取得
-  const { data: session } = useSession();
-  // GitHub関連の状態と更新関数をカスタムフックから取得
+  // GitHub関連の状態と更新関数をコンテキストから取得
   const {
     githubOwner,
     githubRepo,
@@ -21,10 +18,10 @@ export default function GitHubSettings(): ReactElement {
     branchesLoading,
     branchesError,
     selectedBranch,
-    handleSetGithubOwner,
-    handleSetGithubRepo,
+    setGithubOwner,
+    setGithubRepo,
     setSelectedBranch,
-  } = useGitHub(session);
+  } = useGitHubContext();
 
   return (
     <div className="space-y-4 mb-4 p-4 border rounded-md">
@@ -40,7 +37,7 @@ export default function GitHubSettings(): ReactElement {
           type="text"
           id="github-owner"
           value={githubOwner}
-          onChange={(e) => handleSetGithubOwner(e.target.value)}
+          onChange={(e) => setGithubOwner(e.target.value)}
           className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
           placeholder="例: your-github-username"
         />
@@ -56,7 +53,7 @@ export default function GitHubSettings(): ReactElement {
           type="text"
           id="github-repo"
           value={githubRepo}
-          onChange={(e) => handleSetGithubRepo(e.target.value)}
+          onChange={(e) => setGithubRepo(e.target.value)}
           className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
           placeholder="例: your-repo-name"
         />

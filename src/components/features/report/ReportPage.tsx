@@ -13,7 +13,6 @@ import dynamic from "next/dynamic";
 
 import { useSettings } from "@/hooks/useSettings";
 import { useCommitHistory } from "@/hooks/useCommitHistory";
-import { useGitHub } from "@/hooks/useGitHub";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import ReportHeader from "./ReportHeader";
 import WorkTimeRecorder from "./WorkTimeRecorder";
@@ -47,10 +46,9 @@ interface ReportPageProps {
  * @returns {ReactElement} レポート作成ページのUI全体。
  */
 export default function ReportPage({ reportType }: ReportPageProps): ReactElement {
-  // 認証セッション、設定、GitHub関連のカスタムフックを利用
+  // 認証セッション、設定のカスタムフックを利用
   const { data: session } = useSession();
   const { model, handleSetModel: onModelChange } = useSettings();
-  const { githubOwner, githubRepo, selectedBranch } = useGitHub(session);
 
   // 認証セッションでエラーが返された場合のアラート表示とサインアウト処理
   useEffect(() => {
@@ -60,22 +58,12 @@ export default function ReportPage({ reportType }: ReportPageProps): ReactElemen
     }
   }, [session]);
 
-  // useCommitHistoryフックに渡すパラメータをメモ化
-  const commitHistoryParams = useMemo(
-    () => ({
-      owner: githubOwner,
-      repo: githubRepo,
-      branch: selectedBranch,
-    }),
-    [githubOwner, githubRepo, selectedBranch]
-  );
-
   // コミット履歴を取得
   const {
     commits,
     isLoading: isLoadingCommits,
     error: commitError,
-  } = useCommitHistory(commitHistoryParams);
+  } = useCommitHistory();
 
   // モデル変更のハンドラをメモ化
   const handleSetModel = useCallback(

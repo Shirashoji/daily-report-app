@@ -5,6 +5,7 @@ import "./globals.css";
 import AuthSessionProvider from "@/components/common/AuthSessionProvider";
 import Header from "@/components/common/Header";
 import { WorkTimeProvider } from "@/contexts/WorkTimeContext";
+import { GitHubProvider } from "@/contexts/GitHubContext";
 import type { ReactElement } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -36,11 +37,13 @@ export default function RootLayout({
       <body className={inter.className}>
         {/* NextAuth.jsのセッション管理を有効にするプロバイダー */}
         <AuthSessionProvider>
-          {/* 作業時間の状態管理を行うプロバイダー */}
-          <WorkTimeProvider>
-            <Header />
-            <main>{children}</main>
-          </WorkTimeProvider>
+          <GitHubProvider>
+            {/* 作業時間の状態管理を行うプロバイダー */}
+            <WorkTimeProvider>
+              <Header />
+              <main>{children}</main>
+            </WorkTimeProvider>
+          </GitHubProvider>
         </AuthSessionProvider>
       </body>
     </html>

@@ -1,17 +1,9 @@
 // src/hooks/useCommitHistory.ts
 import { useState, useEffect, useCallback } from "react";
 import { useDateContext } from "@/contexts/DateContext";
+import { useGitHubContext } from "@/contexts/GitHubContext";
 import type { ApiResponse } from "@/types/api";
 import type { CommitData } from "@/types/github";
-
-/**
- * `useCommitHistory`フックに渡すパラメータの型定義。
- */
-interface UseCommitHistoryParams {
-  owner: string;
-  repo: string;
-  branch: string;
-}
 
 /**
  * `useCommitHistory`フックが返す値の型定義。
@@ -26,22 +18,18 @@ interface UseCommitHistoryReturn {
 /**
  * GitHubのコミット履歴を取得するためのカスタムフック。
  *
- * @param {UseCommitHistoryParams} params - フックの動作に必要なパラメータ。
  * @returns {UseCommitHistoryReturn} コミットデータ、読み込み状態、エラー情報、および再取得関数を含むオブジェクト。
  */
-export function useCommitHistory({
-  owner,
-  repo,
-  branch,
-}: UseCommitHistoryParams): UseCommitHistoryReturn {
+export function useCommitHistory(): UseCommitHistoryReturn {
   const { startDate, endDate } = useDateContext();
+  const { githubOwner, githubRepo, selectedBranch } = useGitHubContext();
   const [commits, setCommits] = useState<CommitData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchCommits = useCallback(async (): Promise<void> => {
     // ownerやrepoが未設定の場合はAPIを叩かずに早期リターン
-    if (!owner || !repo) {
+    if (!githubOwner || !githubRepo) {
       setCommits([]);
       setIsLoading(false);
       return;
@@ -55,9 +43,9 @@ export function useCommitHistory({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          owner,
-          repo,
-          branch,
+          owner: githubOwner,
+          repo: githubRepo,
+          branch: selectedBranch,
           startDate: startDate.toISOString(),
           endDate: endDate.toISOString(),
         }),
@@ -78,7 +66,7 @@ export function useCommitHistory({
     } finally {
       setIsLoading(false);
     }
-  }, [owner, repo, branch, startDate, endDate]);
+  }, [githubOwner, githubRepo, selectedBranch, startDate, endDate]);
 
   useEffect(() => {
     fetchCommits();
