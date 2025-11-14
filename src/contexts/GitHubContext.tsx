@@ -31,9 +31,19 @@ interface GitHubContextType {
   refetchBranches: () => void;
 }
 
+import type { ReactElement } from "react";
+
+// ... (imports)
+
+// ... (interface)
+
 const GitHubContext = createContext<GitHubContextType | undefined>(undefined);
 
-export function GitHubProvider({ children }: { children: ReactNode }) {
+export function GitHubProvider({
+  children,
+}: {
+  children: ReactNode;
+}): ReactElement {
   const { data: session } = useSession();
   const [githubOwner, setGithubOwnerState] = useState("");
   const [githubRepo, setGithubRepoState] = useState("");
@@ -49,12 +59,12 @@ export function GitHubProvider({ children }: { children: ReactNode }) {
     setGithubRepoState(savedRepo);
   }, []);
 
-  const setGithubOwner = (owner: string) => {
+  const setGithubOwner = (owner: string): void => {
     setGithubOwnerState(owner);
     localStorage.setItem("githubOwner", owner);
   };
 
-  const setGithubRepo = (repo: string) => {
+  const setGithubRepo = (repo: string): void => {
     setGithubRepoState(repo);
     localStorage.setItem("githubRepo", repo);
   };

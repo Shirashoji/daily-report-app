@@ -6,6 +6,7 @@ import { formatDate } from "@/lib/utils";
 import { useGeminiModels } from "@/hooks/useGeminiModels";
 import type { ReportType } from "@/types/report";
 import type { ReactElement } from "react";
+import { startOfDay, endOfDay } from "date-fns";
 
 /**
  * `ReportHeader`コンポーネントのプロパティの型定義。
@@ -50,10 +51,9 @@ export default function ReportHeader({
             id="date-select"
             value={formatDate(startDate)}
             onChange={(e) => {
-              // 選択された日付で開始日と終了日を更新（同日の00:00:00から23:59:59まで）
-              const date = new Date(e.target.value + "T00:00:00");
-              setStartDate(date);
-              setEndDate(new Date(e.target.value + "T23:59:59"));
+              const selectedDate = new Date(e.target.value + "T00:00:00+09:00");
+              setStartDate(startOfDay(selectedDate));
+              setEndDate(endOfDay(selectedDate));
             }}
             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
           />
@@ -73,9 +73,12 @@ export default function ReportHeader({
               type="date"
               id="start-date-select"
               value={formatDate(startDate)}
-              onChange={(e) =>
-                setStartDate(new Date(e.target.value + "T00:00:00"))
-              }
+              onChange={(e) => {
+                const selectedDate = new Date(
+                  e.target.value + "T00:00:00+09:00"
+                );
+                setStartDate(startOfDay(selectedDate));
+              }}
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
             />
           </div>
@@ -90,9 +93,12 @@ export default function ReportHeader({
               type="date"
               id="end-date-select"
               value={formatDate(endDate)}
-              onChange={(e) =>
-                setEndDate(new Date(e.target.value + "T23:59:59"))
-              }
+              onChange={(e) => {
+                const selectedDate = new Date(
+                  e.target.value + "T00:00:00+09:00"
+                );
+                setEndDate(endOfDay(selectedDate));
+              }}
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
             />
           </div>

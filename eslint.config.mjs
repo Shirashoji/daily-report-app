@@ -35,6 +35,12 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  {
+    files: ["jest.config.js", "jest.setup.js", "postcss.config.mjs"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off"
+    }
+  }
 ];
 
 export default eslintConfig;

@@ -2,7 +2,6 @@
 
 import { getCommits } from "../commitService";
 import { fetchFromGitHub } from "@/lib/github";
-import type { CommitData } from "@/types/github";
 
 // fetchFromGitHubをモック化
 jest.mock("@/lib/github", () => ({

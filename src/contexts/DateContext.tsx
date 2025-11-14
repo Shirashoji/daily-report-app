@@ -10,7 +10,10 @@ import {
   Dispatch,
   SetStateAction,
 } from "react";
+import { toZonedTime } from "date-fns-tz";
+import { startOfDay, endOfDay, subDays } from "date-fns";
 import type { ReportType } from "@/types/report";
+import type { ReactElement } from "react";
 
 interface DateContextType {
   startDate: Date;
@@ -26,28 +29,27 @@ interface DateProviderProps {
   reportType: ReportType;
 }
 
-export function DateProvider({ children, reportType }: DateProviderProps) {
-  const [startDate, setStartDate] = useState<Date>(new Date());
-  const [endDate, setEndDate] = useState<Date>(new Date());
+const timeZone = "Asia/Tokyo";
+
+export function DateProvider({
+  children,
+  reportType,
+}: DateProviderProps): ReactElement {
+  const nowInJST = toZonedTime(new Date(), timeZone);
+  const [startDate, setStartDate] = useState<Date>(nowInJST);
+  const [endDate, setEndDate] = useState<Date>(nowInJST);
 
   useEffect(() => {
+    const now = new Date();
+    const nowInJST = toZonedTime(now, timeZone);
+
     if (reportType === "daily") {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      setStartDate(today);
-      const endOfDay = new Date();
-      endOfDay.setHours(23, 59, 59, 999);
-      setEndDate(endOfDay);
+      setStartDate(startOfDay(nowInJST));
+      setEndDate(endOfDay(nowInJST));
     } else {
-      const today = new Date();
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(today.getDate() - 7); // 7日前からの7日間
-      sevenDaysAgo.setHours(0, 0, 0, 0);
-      setStartDate(sevenDaysAgo);
-      
-      const endOfToday = new Date();
-      endOfToday.setHours(23, 59, 59, 999);
-      setEndDate(endOfToday);
+      const sevenDaysAgo = subDays(nowInJST, 7);
+      setStartDate(startOfDay(sevenDaysAgo));
+      setEndDate(endOfDay(nowInJST));
     }
   }, [reportType]);
 

@@ -1,15 +1,15 @@
 // src/lib/utils/index.ts
+import { format } from "date-fns-tz";
 
 /**
  * Dateオブジェクトを「YYYY-MM-DD」形式の文字列にフォーマットします。
+ * タイムゾーンはJST（Asia/Tokyo）に固定されます。
  * @param {Date} date - フォーマットするDateオブジェクト。
  * @returns {string} フォーマットされた日付文字列。
  */
 export const formatDate = (date: Date): string => {
-  const year = date.getUTCFullYear();
-  const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
-  const day = date.getUTCDate().toString().padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  const timeZone = "Asia/Tokyo";
+  return format(date, "yyyy-MM-dd", { timeZone });
 };
 
 /**

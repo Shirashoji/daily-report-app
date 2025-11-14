@@ -1,5 +1,6 @@
 // src/hooks/useCommitHistory.ts
 import { useState, useEffect, useCallback } from "react";
+import { format } from "date-fns-tz";
 import { useDateContext } from "@/contexts/DateContext";
 import { useGitHubContext } from "@/contexts/GitHubContext";
 import type { ApiResponse } from "@/types/api";
@@ -39,6 +40,7 @@ export function useCommitHistory(): UseCommitHistoryReturn {
     setError(null);
 
     try {
+      const timeZone = "Asia/Tokyo";
       const response = await fetch("/api/get-commits", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -46,8 +48,10 @@ export function useCommitHistory(): UseCommitHistoryReturn {
           owner: githubOwner,
           repo: githubRepo,
           branch: selectedBranch,
-          startDate: startDate.toISOString(),
-          endDate: endDate.toISOString(),
+          startDate: format(startDate, "yyyy-MM-dd'T'HH:mm:ssXXX", {
+            timeZone,
+          }),
+          endDate: format(endDate, "yyyy-MM-dd'T'HH:mm:ssXXX", { timeZone }),
         }),
       });
 
