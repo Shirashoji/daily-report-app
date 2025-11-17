@@ -1,12 +1,12 @@
 // src/components/features/report/GeneratedReportView.tsx
-"use client";
+'use client';
 
-import { useReportGenerator } from "@/hooks/useReportGenerator";
-import { useWorkTime } from "@/hooks/useWorkTime";
-import { Button } from "@/components/ui/Button";
-import type { ReportType } from "@/types/report";
-import type { CommitData } from "@/types/github";
-import type { ReactElement } from "react";
+import { useReportGenerator } from '@/hooks/useReportGenerator';
+import { useWorkTime } from '@/hooks/useWorkTime';
+import { Button } from '@/components/ui/Button';
+import type { ReportType } from '@/types/report';
+import type { CommitData } from '@/types/github';
+import type { ReactElement } from 'react';
 
 /**
  * `GeneratedReportView`コンポーネントのプロパティの型定義。
@@ -33,23 +33,17 @@ export default function GeneratedReportView({
   // 作業時間コンテキストから作業時間のリストを取得
   const { workTimes } = useWorkTime();
   // レポート生成関連のフックから状態と関数を取得
-  const {
-    generatedText,
-    isLoading,
-    error,
-    generateReport,
-    copyToClipboard,
-    setGeneratedText,
-  } = useReportGenerator({
-    commits,
-    model,
-    workTimes,
-  });
+  const { generatedText, isLoading, error, generateReport, copyToClipboard, setGeneratedText } =
+    useReportGenerator({
+      commits,
+      model,
+      workTimes,
+    });
 
   return (
     <div>
       <h2 className="text-xl font-semibold mb-2">
-        生成された{initialReportType === "daily" ? "日報" : "MTG資料"}
+        生成された{initialReportType === 'daily' ? '日報' : 'MTG資料'}
       </h2>
       <textarea
         className="w-full h-96 p-2 border rounded-md bg-gray-50"
@@ -64,7 +58,7 @@ export default function GeneratedReportView({
           disabled={isLoading || commits.length === 0} // Disable if no commits
         >
           {/* レポートタイプに応じてボタンのテキストを変更 */}
-          {initialReportType === "daily" ? "日報を生成" : "MTG資料を生成"}
+          {initialReportType === 'daily' ? '日報を生成' : 'MTG資料を生成'}
         </Button>
         <Button
           variant="secondary"

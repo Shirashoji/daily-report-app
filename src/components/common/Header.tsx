@@ -1,10 +1,10 @@
 // src/components/common/Header.tsx
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useSession, signIn, signOut } from "next-auth/react";
-import { Button } from "@/components/ui/Button";
-import type { ReactElement } from "react";
+import Link from 'next/link';
+import { useSession, signIn, signOut } from 'next-auth/react';
+import { Button } from '@/components/ui/Button';
+import type { ReactElement } from 'react';
 
 const GITHUB_APP_NAME = process.env.NEXT_PUBLIC_GITHUB_APP_NAME;
 
@@ -38,9 +38,7 @@ export default function Header(): ReactElement {
           {session ? (
             // ユーザーがサインインしている場合の表示
             <>
-              <span className="text-sm">
-                {session.user?.name || session.user?.email}
-              </span>
+              <span className="text-sm">{session.user?.name || session.user?.email}</span>
               <Button variant="danger" size="sm" onClick={() => signOut()}>
                 Sign out
               </Button>
@@ -48,11 +46,7 @@ export default function Header(): ReactElement {
           ) : (
             // ユーザーがサインアウトしている場合の表示
             <div className="flex items-center space-x-2">
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => signIn("github")}
-              >
+              <Button variant="primary" size="sm" onClick={() => signIn('github')}>
                 Sign in with GitHub
               </Button>
               {GITHUB_APP_NAME && (
@@ -72,4 +66,3 @@ export default function Header(): ReactElement {
     </header>
   );
 }
-

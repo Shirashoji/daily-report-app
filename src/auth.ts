@@ -1,19 +1,19 @@
 // src/auth.ts
-import NextAuth from "next-auth";
-import type { NextAuthConfig } from "next-auth";
-import GitHub from "next-auth/providers/github";
-import type { JWT } from "next-auth/jwt";
-import type { Account, Session } from "next-auth";
+import NextAuth from 'next-auth';
+import type { NextAuthConfig } from 'next-auth';
+import GitHub from 'next-auth/providers/github';
+import type { JWT } from 'next-auth/jwt';
+import type { Account, Session } from 'next-auth';
 
 // 必須の環境変数が設定されているかを確認
 if (!process.env.AUTH_GITHUB_ID) {
-  throw new Error("環境変数 AUTH_GITHUB_ID が設定されていません。");
+  throw new Error('環境変数 AUTH_GITHUB_ID が設定されていません。');
 }
 if (!process.env.AUTH_GITHUB_SECRET) {
-  throw new Error("環境変数 AUTH_GITHUB_SECRET が設定されていません。");
+  throw new Error('環境変数 AUTH_GITHUB_SECRET が設定されていません。');
 }
 if (!process.env.AUTH_SECRET) {
-  throw new Error("環境変数 AUTH_SECRET が設定されていません。");
+  throw new Error('環境変数 AUTH_SECRET が設定されていません。');
 }
 
 /**
@@ -31,7 +31,7 @@ export const authOptions: NextAuthConfig = {
       clientId: process.env.AUTH_GITHUB_ID,
       clientSecret: process.env.AUTH_GITHUB_SECRET,
       // ユーザーにリポジトリへのアクセス権限を要求する
-      authorization: { params: { scope: "repo" } },
+      authorization: { params: { scope: 'repo' } },
     }),
   ],
   // 認証フローの特定のイベントで実行されるコールバック関数
@@ -45,13 +45,7 @@ export const authOptions: NextAuthConfig = {
      * @returns {JWT} 更新されたJWT。
      * @see https://next-auth.js.org/configuration/callbacks#jwt-callback
      */
-    async jwt({
-      token,
-      account,
-    }: {
-      token: JWT;
-      account?: Account | null | undefined;
-    }) {
+    async jwt({ token, account }: { token: JWT; account?: Account | null | undefined }) {
       // サインイン時に`account`オブジェクトが存在する場合
       if (account) {
         // GitHubのアクセストークンをJWTに追加

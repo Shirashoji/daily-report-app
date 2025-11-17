@@ -1,7 +1,7 @@
 // src/components/common/ErrorBoundary.tsx
-"use client";
+'use client';
 
-import { Component, ReactNode, ErrorInfo } from "react";
+import { Component, ReactNode, ErrorInfo } from 'react';
 
 /**
  * `ErrorBoundary`コンポーネントのプロパティの型定義。
@@ -54,7 +54,7 @@ export class ErrorBoundary extends Component<Props, State> {
    * @param {ErrorInfo} errorInfo - エラーに関する追加情報（コンポーネントスタックなど）。
    */
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error("ErrorBoundaryによってキャッチされたエラー:", error, errorInfo);
+    console.error('ErrorBoundaryによってキャッチされたエラー:', error, errorInfo);
   }
 
   /**

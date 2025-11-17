@@ -1,5 +1,5 @@
 // src/hooks/useSettings.ts
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
 /**
  * `useSettings`フックが返す値の型定義。
@@ -19,11 +19,11 @@ interface UseSettingsReturn {
  */
 export function useSettings(): UseSettingsReturn {
   // AIモデル名を管理するstate。デフォルト値を設定。
-  const [model, setModel] = useState("gemini-1.5-pro-latest");
+  const [model, setModel] = useState('gemini-1.5-pro-latest');
 
   // コンポーネントのマウント時にlocalStorageから保存されたモデル名を読み込む
   useEffect(() => {
-    const savedModel = localStorage.getItem("geminiModel");
+    const savedModel = localStorage.getItem('geminiModel');
     if (savedModel) {
       setModel(savedModel);
     }
@@ -35,7 +35,7 @@ export function useSettings(): UseSettingsReturn {
    */
   const handleSetModel = (modelName: string): void => {
     setModel(modelName);
-    localStorage.setItem("geminiModel", modelName);
+    localStorage.setItem('geminiModel', modelName);
   };
 
   return {
@@ -43,4 +43,3 @@ export function useSettings(): UseSettingsReturn {
     handleSetModel,
   };
 }
-

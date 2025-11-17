@@ -1,16 +1,12 @@
 // src/components/features/report/DailyWorkTime.tsx
-"use client";
+'use client';
 
-import { useWorkTime } from "@/hooks/useWorkTime";
-import { useDateContext } from "@/contexts/DateContext";
-import { type WorkTime } from "@/contexts/WorkTimeContext";
-import {
-  formatDate,
-  formatWorkTime,
-  calculateWorkDuration,
-} from "@/lib/utils";
-import { Button } from "@/components/ui/Button";
-import type { ReactElement } from "react";
+import { useWorkTime } from '@/hooks/useWorkTime';
+import { useDateContext } from '@/contexts/DateContext';
+import { type WorkTime } from '@/contexts/WorkTimeContext';
+import { formatDate, formatWorkTime, calculateWorkDuration } from '@/lib/utils';
+import { Button } from '@/components/ui/Button';
+import type { ReactElement } from 'react';
 
 /**
  * 指定された一日の作業時間エントリを表示し、管理（編集・削除）するためのコンポーネント。
@@ -40,9 +36,7 @@ export default function DailyWorkTime(): ReactElement {
   return (
     <div>
       <div className="flex justify-between items-center mb-2">
-        <h3 className="text-lg font-medium">
-          記録された作業（{formatDate(startDate)}）
-        </h3>
+        <h3 className="text-lg font-medium">記録された作業（{formatDate(startDate)}）</h3>
         <span className="text-lg font-medium">
           合計: {Math.floor(totalDuration / 60)}時間 {totalDuration % 60}分
         </span>
@@ -73,7 +67,7 @@ export default function DailyWorkTime(): ReactElement {
                     <span className="mx-2">〜</span>
                     <input
                       type="time"
-                      defaultValue={wt.end ? formatWorkTime(wt.end) : ""}
+                      defaultValue={wt.end ? formatWorkTime(wt.end) : ''}
                       id={`end-time-${wt.originalIndex}`}
                       className="border-gray-300 rounded-md"
                     />
@@ -98,11 +92,7 @@ export default function DailyWorkTime(): ReactElement {
                       >
                         保存
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={handleCancelEdit}
-                      >
+                      <Button size="sm" variant="secondary" onClick={handleCancelEdit}>
                         キャンセル
                       </Button>
                     </div>
@@ -111,10 +101,8 @@ export default function DailyWorkTime(): ReactElement {
                   // 通常表示モードのUI
                   <>
                     <span>
-                      {formatWorkTime(wt.start)} 〜{" "}
-                      {wt.end ? formatWorkTime(wt.end) : "作業中..."}
-                      {wt.end &&
-                        ` (${calculateWorkDuration(wt.start, wt.end)}分)`}
+                      {formatWorkTime(wt.start)} 〜 {wt.end ? formatWorkTime(wt.end) : '作業中...'}
+                      {wt.end && ` (${calculateWorkDuration(wt.start, wt.end)}分)`}
                     </span>
                     <div className="flex space-x-2">
                       <Button
@@ -137,9 +125,7 @@ export default function DailyWorkTime(): ReactElement {
               </div>
               {/* メモが存在する場合に表示 */}
               {wt.memo && (
-                <pre className="whitespace-pre-wrap bg-white p-2 rounded text-sm">
-                  {wt.memo}
-                </pre>
+                <pre className="whitespace-pre-wrap bg-white p-2 rounded text-sm">{wt.memo}</pre>
               )}
             </li>
           ))}

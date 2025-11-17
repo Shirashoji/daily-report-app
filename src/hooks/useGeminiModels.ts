@@ -1,6 +1,6 @@
 // src/hooks/useGeminiModels.ts
-import { useState, useEffect } from "react";
-import type { ApiResponse } from "@/types/api";
+import { useState, useEffect } from 'react';
+import type { ApiResponse } from '@/types/api';
 
 /**
  * Geminiモデルの情報を格納するインターフェース。
@@ -52,24 +52,22 @@ export function useGeminiModels(): UseGeminiModelsReturn {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch("/api/get-gemini-models");
+        const response = await fetch('/api/get-gemini-models');
         const data: ApiResponse<ModelsResponse> = await response.json();
 
         if (!response.ok || data.error) {
-          throw new Error(data.error || "Geminiモデルの取得に失敗しました。");
+          throw new Error(data.error || 'Geminiモデルの取得に失敗しました。');
         }
 
         // 'generateContent'をサポートし、かつ'embedding'モデルではないモデルのみをフィルタリングする
         const filteredModels =
           data.data?.models.filter(
-            (model) =>
-              model.name.includes("gemini") && !model.name.includes("embedding")
+            (model) => model.name.includes('gemini') && !model.name.includes('embedding')
           ) || [];
 
         setModels(filteredModels);
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "不明なエラーが発生しました。";
+        const errorMessage = err instanceof Error ? err.message : '不明なエラーが発生しました。';
         setError(errorMessage);
       } finally {
         setIsLoading(false);

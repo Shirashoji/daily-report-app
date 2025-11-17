@@ -14,7 +14,7 @@ export class AppError extends Error {
     public statusCode: number = 500
   ) {
     super(message);
-    this.name = "AppError";
+    this.name = 'AppError';
   }
 }
 
@@ -28,8 +28,8 @@ export class GitHubAPIError extends AppError {
    * @param statusCode - GitHub APIから返されたHTTPステータスコード。
    */
   constructor(message: string, statusCode: number) {
-    super(message, "GITHUB_API_ERROR", statusCode);
-    this.name = "GitHubAPIError";
+    super(message, 'GITHUB_API_ERROR', statusCode);
+    this.name = 'GitHubAPIError';
   }
 }
 
@@ -42,8 +42,11 @@ export class ValidationError extends AppError {
    * @param message - エラーメッセージ。
    * @param field - バリデーションエラーが発生したフィールド名。
    */
-  constructor(message: string, public field: string) {
-    super(message, "VALIDATION_ERROR", 400);
-    this.name = "ValidationError";
+  constructor(
+    message: string,
+    public field: string
+  ) {
+    super(message, 'VALIDATION_ERROR', 400);
+    this.name = 'ValidationError';
   }
 }

@@ -1,10 +1,10 @@
 // src/hooks/useCommitHistory.ts
-import { useState, useEffect, useCallback } from "react";
-import { format } from "date-fns-tz";
-import { useDateContext } from "@/contexts/DateContext";
-import { useGitHubContext } from "@/contexts/GitHubContext";
-import type { ApiResponse } from "@/types/api";
-import type { CommitData } from "@/types/github";
+import { useState, useEffect, useCallback } from 'react';
+import { format } from 'date-fns-tz';
+import { useDateContext } from '@/contexts/DateContext';
+import { useGitHubContext } from '@/contexts/GitHubContext';
+import type { ApiResponse } from '@/types/api';
+import type { CommitData } from '@/types/github';
 
 /**
  * `useCommitHistory`フックが返す値の型定義。
@@ -40,10 +40,10 @@ export function useCommitHistory(): UseCommitHistoryReturn {
     setError(null);
 
     try {
-      const timeZone = "Asia/Tokyo";
-      const response = await fetch("/api/get-commits", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const timeZone = 'Asia/Tokyo';
+      const response = await fetch('/api/get-commits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           owner: githubOwner,
           repo: githubRepo,
@@ -58,13 +58,12 @@ export function useCommitHistory(): UseCommitHistoryReturn {
       const data: ApiResponse<CommitData[]> = await response.json();
 
       if (!response.ok || data.error) {
-        throw new Error(data.error || "コミット履歴の取得に失敗しました。");
+        throw new Error(data.error || 'コミット履歴の取得に失敗しました。');
       }
 
       setCommits(data.data || []);
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "不明なエラーが発生しました。";
+      const errorMessage = err instanceof Error ? err.message : '不明なエラーが発生しました。';
       setError(new Error(errorMessage));
       setCommits([]); // エラー時はコミットデータを空にする
     } finally {

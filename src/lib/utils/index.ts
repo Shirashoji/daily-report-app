@@ -1,5 +1,5 @@
 // src/lib/utils/index.ts
-import { format } from "date-fns-tz";
+import { format } from 'date-fns-tz';
 
 /**
  * Dateオブジェクトを「YYYY-MM-DD」形式の文字列にフォーマットします。
@@ -8,8 +8,8 @@ import { format } from "date-fns-tz";
  * @returns {string} フォーマットされた日付文字列。
  */
 export const formatDate = (date: Date): string => {
-  const timeZone = "Asia/Tokyo";
-  return format(date, "yyyy-MM-dd", { timeZone });
+  const timeZone = 'Asia/Tokyo';
+  return format(date, 'yyyy-MM-dd', { timeZone });
 };
 
 /**
@@ -18,9 +18,9 @@ export const formatDate = (date: Date): string => {
  * @returns {string} フォーマットされた時刻文字列。
  */
 export const formatWorkTime = (time: Date): string => {
-  return time.toLocaleTimeString("ja-JP", {
-    hour: "2-digit",
-    minute: "2-digit",
+  return time.toLocaleTimeString('ja-JP', {
+    hour: '2-digit',
+    minute: '2-digit',
   });
 };
 
@@ -30,10 +30,7 @@ export const formatWorkTime = (time: Date): string => {
  * @param {Date | null} end - 終了日時。
  * @returns {number} 経過時間（分）。終了日時がない場合は0を返します。
  */
-export const calculateWorkDuration = (
-  start: Date,
-  end: Date | null
-): number => {
+export const calculateWorkDuration = (start: Date, end: Date | null): number => {
   if (!end) return 0;
   const diff = end.getTime() - start.getTime();
   return Math.round(diff / 60000); // 分単位に変換

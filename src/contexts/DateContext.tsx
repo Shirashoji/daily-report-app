@@ -1,5 +1,5 @@
 // src/contexts/DateContext.tsx
-"use client";
+'use client';
 
 import {
   createContext,
@@ -9,11 +9,11 @@ import {
   ReactNode,
   Dispatch,
   SetStateAction,
-} from "react";
-import { toZonedTime } from "date-fns-tz";
-import { startOfDay, endOfDay, subDays } from "date-fns";
-import type { ReportType } from "@/types/report";
-import type { ReactElement } from "react";
+} from 'react';
+import { toZonedTime } from 'date-fns-tz';
+import { startOfDay, endOfDay, subDays } from 'date-fns';
+import type { ReportType } from '@/types/report';
+import type { ReactElement } from 'react';
 
 interface DateContextType {
   startDate: Date;
@@ -29,12 +29,9 @@ interface DateProviderProps {
   reportType: ReportType;
 }
 
-const timeZone = "Asia/Tokyo";
+const timeZone = 'Asia/Tokyo';
 
-export function DateProvider({
-  children,
-  reportType,
-}: DateProviderProps): ReactElement {
+export function DateProvider({ children, reportType }: DateProviderProps): ReactElement {
   const nowInJST = toZonedTime(new Date(), timeZone);
   const [startDate, setStartDate] = useState<Date>(nowInJST);
   const [endDate, setEndDate] = useState<Date>(nowInJST);
@@ -43,7 +40,7 @@ export function DateProvider({
     const now = new Date();
     const nowInJST = toZonedTime(now, timeZone);
 
-    if (reportType === "daily") {
+    if (reportType === 'daily') {
       setStartDate(startOfDay(nowInJST));
       setEndDate(endOfDay(nowInJST));
     } else {
@@ -61,7 +58,7 @@ export function DateProvider({
 export function useDateContext(): DateContextType {
   const context = useContext(DateContext);
   if (context === undefined) {
-    throw new Error("useDateContext must be used within a DateProvider");
+    throw new Error('useDateContext must be used within a DateProvider');
   }
   return context;
 }

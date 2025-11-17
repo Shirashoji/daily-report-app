@@ -1,23 +1,22 @@
 // src/app/layout.tsx
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import AuthSessionProvider from "@/components/common/AuthSessionProvider";
-import Header from "@/components/common/Header";
-import { WorkTimeProvider } from "@/contexts/WorkTimeContext";
-import { GitHubProvider } from "@/contexts/GitHubContext";
-import type { ReactElement } from "react";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import AuthSessionProvider from '@/components/common/AuthSessionProvider';
+import Header from '@/components/common/Header';
+import { WorkTimeProvider } from '@/contexts/WorkTimeContext';
+import { GitHubProvider } from '@/contexts/GitHubContext';
+import type { ReactElement } from 'react';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 /**
  * Next.jsアプリケーションのメタデータ。
  * ページのタイトルや説明などを定義します。
  */
 export const metadata: Metadata = {
-  title: "日報・議事録作成支援アプリ",
-  description:
-    "GitHubのコミット履歴から日報や議事録のドラフトを自動生成するアプリケーションです。",
+  title: '日報・議事録作成支援アプリ',
+  description: 'GitHubのコミット履歴から日報や議事録のドラフトを自動生成するアプリケーションです。',
 };
 
 /**

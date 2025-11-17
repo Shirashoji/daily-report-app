@@ -1,11 +1,11 @@
 // src/app/stats/page.tsx
-"use client";
+'use client';
 
-import { useState, useEffect, ReactElement } from "react";
-import Link from "next/link";
-import { useWorkTime } from "@/hooks/useWorkTime";
-import { type WorkTime } from "@/contexts/WorkTimeContext";
-import { formatDate } from "@/lib/utils";
+import { useState, useEffect, ReactElement } from 'react';
+import Link from 'next/link';
+import { useWorkTime } from '@/hooks/useWorkTime';
+import { type WorkTime } from '@/contexts/WorkTimeContext';
+import { formatDate } from '@/lib/utils';
 
 /**
  * 開始日時と終了日時の差を分単位で計算します。
@@ -73,7 +73,7 @@ export default function StatsPage(): ReactElement {
         <div className="p-6 bg-white border rounded-lg shadow-md text-center">
           <h2 className="text-xl font-semibold text-gray-600">最初の記録日</h2>
           <p className="text-4xl font-bold mt-2 text-gray-800">
-            {firstDate ? firstDate.replace(/-/g, "/") : "記録がありません"}
+            {firstDate ? firstDate.replace(/-/g, '/') : '記録がありません'}
           </p>
         </div>
       </div>

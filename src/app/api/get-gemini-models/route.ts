@@ -1,7 +1,7 @@
 // src/app/api/get-gemini-models/route.ts
-import { NextResponse } from "next/server";
-import { AppError } from "@/lib/errors";
-import type { ApiResponse } from "@/types/api";
+import { NextResponse } from 'next/server';
+import { AppError } from '@/lib/errors';
+import type { ApiResponse } from '@/types/api';
 
 /**
  * クライアントに返すGeminiモデル情報の型定義。
@@ -42,7 +42,7 @@ function handleError(error: unknown): NextResponse<ApiResponse<null>> {
     );
   }
   return NextResponse.json(
-    { error: "予期せぬエラーが発生しました。", status: 500 },
+    { error: '予期せぬエラーが発生しました。', status: 500 },
     { status: 500 }
   );
 }
@@ -52,17 +52,11 @@ function handleError(error: unknown): NextResponse<ApiResponse<null>> {
  * 利用可能なGeminiモデルのリストを取得するAPIエンドポイント。
  * @returns モデルリストまたはエラーを含むNextResponse。
  */
-export async function GET(): Promise<
-  NextResponse<ApiResponse<ModelsResponse | null>>
-> {
+export async function GET(): Promise<NextResponse<ApiResponse<ModelsResponse | null>>> {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new AppError(
-        "Gemini APIキーが設定されていません。",
-        "CONFIG_ERROR",
-        500
-      );
+      throw new AppError('Gemini APIキーが設定されていません。', 'CONFIG_ERROR', 500);
     }
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
@@ -71,9 +65,8 @@ export async function GET(): Promise<
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new AppError(
-        errorData.error?.message ||
-          `モデルの取得に失敗しました: ${response.status}`,
-        "API_ERROR",
+        errorData.error?.message || `モデルの取得に失敗しました: ${response.status}`,
+        'API_ERROR',
         response.status
       );
     }

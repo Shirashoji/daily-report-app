@@ -1,6 +1,6 @@
 // src/lib/github/index.ts
-import jwt from "jsonwebtoken";
-import { GitHubAPIError, AppError } from "@/lib/errors";
+import jwt from 'jsonwebtoken';
+import { GitHubAPIError, AppError } from '@/lib/errors';
 
 const GITHUB_APP_ID = process.env.GITHUB_APP_ID;
 const GITHUB_APP_PRIVATE_KEY = process.env.GITHUB_APP_PRIVATE_KEY;
@@ -14,11 +14,7 @@ const GITHUB_APP_PRIVATE_KEY = process.env.GITHUB_APP_PRIVATE_KEY;
  */
 function getAppToken(): string {
   if (!GITHUB_APP_ID || !GITHUB_APP_PRIVATE_KEY) {
-    throw new AppError(
-      "GitHub Appの認証情報が設定されていません。",
-      "CONFIG_ERROR",
-      500
-    );
+    throw new AppError('GitHub Appの認証情報が設定されていません。', 'CONFIG_ERROR', 500);
   }
   const now = Math.floor(Date.now() / 1000);
   const payload = {
@@ -27,8 +23,8 @@ function getAppToken(): string {
     iss: GITHUB_APP_ID, // 発行者
   };
 
-  const privateKey = GITHUB_APP_PRIVATE_KEY.replace(/\\n/g, "\n");
-  return jwt.sign(payload, privateKey, { algorithm: "RS256" });
+  const privateKey = GITHUB_APP_PRIVATE_KEY.replace(/\\n/g, '\n');
+  return jwt.sign(payload, privateKey, { algorithm: 'RS256' });
 }
 
 /**
@@ -39,18 +35,16 @@ function getAppToken(): string {
  * @throws {GitHubAPIError} アクセストークンの取得に失敗した場合にスローされます。
  * @private
  */
-async function getInstallationAccessToken(
-  installationId: string
-): Promise<string> {
+async function getInstallationAccessToken(installationId: string): Promise<string> {
   const appToken = getAppToken();
 
   const response = await fetch(
     `https://api.github.com/app/installations/${installationId}/access_tokens`,
     {
-      method: "POST",
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${appToken}`,
-        Accept: "application/vnd.github.v3+json",
+        Accept: 'application/vnd.github.v3+json',
       },
     }
   );
@@ -58,7 +52,7 @@ async function getInstallationAccessToken(
   const data = await response.json();
   if (!response.ok) {
     throw new GitHubAPIError(
-      data.message || "インストールアクセストークンの取得に失敗しました。",
+      data.message || 'インストールアクセストークンの取得に失敗しました。',
       response.status
     );
   }
@@ -74,10 +68,7 @@ async function getInstallationAccessToken(
  * @throws {GitHubAPIError} インストール情報が見つからない場合や、アクセストークンが取得できない場合にスローされます。
  * @private
  */
-async function getGitHubHeaders(
-  owner: string,
-  repo: string
-): Promise<Record<string, string>> {
+async function getGitHubHeaders(owner: string, repo: string): Promise<Record<string, string>> {
   const appToken = getAppToken();
 
   const installationResponse = await fetch(
@@ -85,7 +76,7 @@ async function getGitHubHeaders(
     {
       headers: {
         Authorization: `Bearer ${appToken}`,
-        Accept: "application/vnd.github.v3+json",
+        Accept: 'application/vnd.github.v3+json',
       },
     }
   );
@@ -98,7 +89,7 @@ async function getGitHubHeaders(
       );
     }
     throw new GitHubAPIError(
-      "リポジトリのインストール情報の取得に失敗しました。",
+      'リポジトリのインストール情報の取得に失敗しました。',
       installationResponse.status
     );
   }
@@ -117,14 +108,14 @@ async function getGitHubHeaders(
 
   if (!token) {
     throw new GitHubAPIError(
-      "認証エラー: インストールアクセストークンを取得できませんでした。",
+      '認証エラー: インストールアクセストークンを取得できませんでした。',
       401
     );
   }
 
   return {
     Authorization: `token ${token}`,
-    Accept: "application/vnd.github.v3+json",
+    Accept: 'application/vnd.github.v3+json',
   };
 }
 
@@ -144,11 +135,7 @@ async function getGitHubHeaders(
  * );
  * const commits = await response.json();
  */
-export async function fetchFromGitHub(
-  url: string,
-  owner: string,
-  repo: string
-): Promise<Response> {
+export async function fetchFromGitHub(url: string, owner: string, repo: string): Promise<Response> {
   try {
     const headers = await getGitHubHeaders(owner, repo);
     const response = await fetch(url, { headers });
@@ -167,8 +154,8 @@ export async function fetchFromGitHub(
       throw error;
     }
     throw new AppError(
-      "GitHubからのデータ取得中に予期せぬエラーが発生しました。",
-      "UNKNOWN_ERROR",
+      'GitHubからのデータ取得中に予期せぬエラーが発生しました。',
+      'UNKNOWN_ERROR',
       500
     );
   }

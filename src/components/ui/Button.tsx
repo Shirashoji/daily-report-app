@@ -1,6 +1,6 @@
 // src/components/ui/Button.tsx
-import { ButtonHTMLAttributes, ReactNode, ReactElement } from "react";
-import clsx from "clsx";
+import { ButtonHTMLAttributes, ReactNode, ReactElement } from 'react';
+import clsx from 'clsx';
 
 /**
  * Buttonコンポーネントのプロパティの型定義。
@@ -11,12 +11,12 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
    * ボタンの見た目の種類。
    * @default 'primary'
    */
-  variant?: "primary" | "secondary" | "danger";
+  variant?: 'primary' | 'secondary' | 'danger';
   /**
    * ボタンのサイズ。
    * @default 'md'
    */
-  size?: "sm" | "md" | "lg";
+  size?: 'sm' | 'md' | 'lg';
   /**
    * ボタン内に表示されるコンテンツ。
    */
@@ -35,8 +35,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * @returns {ReactElement} レンダリングされたbutton要素。
  */
 export function Button({
-  variant = "primary",
-  size = "md",
+  variant = 'primary',
+  size = 'md',
   children,
   isLoading = false,
   className,
@@ -46,22 +46,22 @@ export function Button({
   return (
     <button
       className={clsx(
-        "font-bold rounded transition-colors",
+        'font-bold rounded transition-colors',
         {
-          "bg-blue-500 hover:bg-blue-700 text-white": variant === "primary",
-          "bg-gray-500 hover:bg-gray-700 text-white": variant === "secondary",
-          "bg-red-500 hover:bg-red-700 text-white": variant === "danger",
-          "py-1 px-2 text-sm": size === "sm",
-          "py-2 px-4 text-base": size === "md",
-          "py-3 px-6 text-lg": size === "lg",
-          "opacity-50 cursor-not-allowed": disabled || isLoading,
+          'bg-blue-500 hover:bg-blue-700 text-white': variant === 'primary',
+          'bg-gray-500 hover:bg-gray-700 text-white': variant === 'secondary',
+          'bg-red-500 hover:bg-red-700 text-white': variant === 'danger',
+          'py-1 px-2 text-sm': size === 'sm',
+          'py-2 px-4 text-base': size === 'md',
+          'py-3 px-6 text-lg': size === 'lg',
+          'opacity-50 cursor-not-allowed': disabled || isLoading,
         },
         className
       )}
       disabled={disabled || isLoading}
       {...props}
     >
-      {isLoading ? "Loading..." : children}
+      {isLoading ? 'Loading...' : children}
     </button>
   );
 }

@@ -1,7 +1,7 @@
 // @ts-expect-error - モジュールの拡張のため
-import { DefaultSession } from "next-auth";
+import { DefaultSession } from 'next-auth';
 
-declare module "next-auth" {
+declare module 'next-auth' {
   /**
    * NextAuthの組み込みセッション型をカスタムプロパティで拡張します。
    * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
@@ -23,11 +23,11 @@ declare module "next-auth" {
        * ユーザーのGitHub ID。
        */
       id?: string;
-    } & DefaultSession["user"];
+    } & DefaultSession['user'];
   }
 }
 
-declare module "next-auth/jwt" {
+declare module 'next-auth/jwt' {
   /**
    * NextAuthの組み込みJWT型をカスタムプロパティで拡張します。
    * @see https://next-auth.js.org/getting-started/typescript#module-augmentation

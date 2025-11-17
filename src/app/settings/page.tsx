@@ -1,13 +1,13 @@
 // src/app/settings/page.tsx
-"use client";
+'use client';
 
-import { useState, useRef, ReactElement } from "react";
-import Link from "next/link";
-import { useSettings } from "@/hooks/useSettings";
-import { useWorkTime } from "@/hooks/useWorkTime";
-import { useGeminiModels } from "@/hooks/useGeminiModels";
-import { formatDate } from "@/lib/utils";
-import { Button } from "@/components/ui/Button";
+import { useState, useRef, ReactElement } from 'react';
+import Link from 'next/link';
+import { useSettings } from '@/hooks/useSettings';
+import { useWorkTime } from '@/hooks/useWorkTime';
+import { useGeminiModels } from '@/hooks/useGeminiModels';
+import { formatDate } from '@/lib/utils';
+import { Button } from '@/components/ui/Button';
 
 /**
  * アプリケーションの各種設定を行うページコンポーネント。
@@ -18,14 +18,10 @@ export default function SettingsPage(): ReactElement {
   // 各種設定やデータを管理するカスタムフック
   const { model, handleSetModel } = useSettings();
   const { workTimes, importWorkTimes } = useWorkTime();
-  const {
-    models: geminiModels,
-    isLoading: modelsLoading,
-    error: modelsError,
-  } = useGeminiModels();
+  const { models: geminiModels, isLoading: modelsLoading, error: modelsError } = useGeminiModels();
 
   // ユーザーへの通知メッセージを管理するstate
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
   // ファイルインポート用のinput要素への参照
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -34,16 +30,15 @@ export default function SettingsPage(): ReactElement {
    */
   const handleExportWorkTimes = (): void => {
     const dataStr = JSON.stringify(workTimes, null, 2);
-    const dataUri =
-      "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
     const exportFileDefaultName = `work-times-${formatDate(new Date())}.json`;
 
-    const linkElement = document.createElement("a");
-    linkElement.setAttribute("href", dataUri);
-    linkElement.setAttribute("download", exportFileDefaultName);
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
-    setMessage("作業時間データをエクスポートしました。");
-    setTimeout(() => setMessage(""), 3000);
+    setMessage('作業時間データをエクスポートしました。');
+    setTimeout(() => setMessage(''), 3000);
   };
 
   /**
@@ -56,10 +51,10 @@ export default function SettingsPage(): ReactElement {
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>): void => {
         const text = e.target?.result;
-        if (typeof text === "string") {
+        if (typeof text === 'string') {
           importWorkTimes(text);
-          setMessage("作業時間データをインポートしました。");
-          setTimeout(() => setMessage(""), 3000);
+          setMessage('作業時間データをインポートしました。');
+          setTimeout(() => setMessage(''), 3000);
         }
       };
       reader.readAsText(file);
@@ -80,10 +75,7 @@ export default function SettingsPage(): ReactElement {
         <div>
           <h2 className="text-xl font-semibold mb-2">Gemini</h2>
           <div className="p-4 border rounded-md">
-            <label
-              htmlFor="model-select"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="model-select" className="block text-sm font-medium text-gray-700">
               Model:
             </label>
             <select
@@ -103,9 +95,7 @@ export default function SettingsPage(): ReactElement {
                   </option>
                 ))}
             </select>
-            {modelsError && (
-              <p className="text-red-500 text-sm mt-1">{modelsError}</p>
-            )}
+            {modelsError && <p className="text-red-500 text-sm mt-1">{modelsError}</p>}
           </div>
         </div>
 
@@ -115,10 +105,7 @@ export default function SettingsPage(): ReactElement {
           <div className="space-y-4 p-4 border rounded-md">
             <div className="flex space-x-2">
               <Button onClick={handleExportWorkTimes}>エクスポート</Button>
-              <Button
-                variant="secondary"
-                onClick={() => fileInputRef.current?.click()}
-              >
+              <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
                 インポート
               </Button>
               <input

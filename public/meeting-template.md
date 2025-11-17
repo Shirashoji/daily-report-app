@@ -1,5 +1,5 @@
 ---
-title: "%{Year}-%{month}-%{day}MTG"
+title: '%{Year}-%{month}-%{day}MTG'
 category: ゼミ/大学院/shirashoji/MTG
 ---
 

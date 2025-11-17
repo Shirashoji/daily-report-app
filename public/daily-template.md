@@ -1,5 +1,5 @@
 ---
-title: "%{Year}%{month}%{day}"
+title: '%{Year}%{month}%{day}'
 category: Templates/ゼミ/大学院/研究作業日報/%{me}/%{Year:-3m}
 ---
 

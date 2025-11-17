@@ -1,7 +1,7 @@
 // src/lib/github/services/commitService.ts
 
-import { fetchFromGitHub } from "@/lib/github";
-import type { CommitData } from "@/types/github";
+import { fetchFromGitHub } from '@/lib/github';
+import type { CommitData } from '@/types/github';
 
 /**
  * GitHub APIから返されるコミット情報の型定義（必要な部分のみ）。
@@ -74,7 +74,9 @@ async function fetchCommitsFromAllBranches(
   const branchesUrl = `https://api.github.com/repos/${owner}/${repo}/branches`;
   const branchesResponse = await fetchFromGitHub(branchesUrl, owner, repo);
   if (!branchesResponse.ok) {
-    throw new Error(`Failed to fetch branches for ${owner}/${repo}: ${branchesResponse.statusText}`);
+    throw new Error(
+      `Failed to fetch branches for ${owner}/${repo}: ${branchesResponse.statusText}`
+    );
   }
   const branches: GitHubBranch[] = await branchesResponse.json();
 
@@ -83,7 +85,7 @@ async function fetchCommitsFromAllBranches(
   );
 
   const results = await Promise.all(commitPromises);
-  
+
   const commitsBySha = new Map<string, CommitData>();
   for (const branchCommits of results) {
     for (const commit of branchCommits) {
@@ -92,7 +94,7 @@ async function fetchCommitsFromAllBranches(
       }
     }
   }
-  
+
   return Array.from(commitsBySha.values());
 }
 
@@ -113,11 +115,9 @@ export async function getCommits(
   until: string
 ): Promise<CommitData[]> {
   const commits =
-    branch && branch !== "all"
+    branch && branch !== 'all'
       ? await fetchCommitsForBranch(owner, repo, branch, since, until)
       : await fetchCommitsFromAllBranches(owner, repo, since, until);
 
-  return commits.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+  return commits.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { SessionProvider } from "next-auth/react";
-import type { ReactElement, ReactNode } from "react";
+import { SessionProvider } from 'next-auth/react';
+import type { ReactElement, ReactNode } from 'react';
 
 /**
  * NextAuth.jsの `SessionProvider` でアプリケーションをラップするクライアントサイドコンポーネント。
@@ -12,10 +12,6 @@ import type { ReactElement, ReactNode } from "react";
  * @returns {ReactElement} `SessionProvider` でラップされた子コンポーネント。
  * @see https://next-auth.js.org/getting-started/client#sessionprovider
  */
-export default function AuthSessionProvider({
-  children,
-}: {
-  children: ReactNode;
-}): ReactElement {
+export default function AuthSessionProvider({ children }: { children: ReactNode }): ReactElement {
   return <SessionProvider>{children}</SessionProvider>;
 }

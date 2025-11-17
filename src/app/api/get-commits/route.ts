@@ -1,9 +1,9 @@
 // src/app/api/get-commits/route.ts
-import { NextResponse } from "next/server";
-import { getCommits } from "@/lib/github/services/commitService";
-import { AppError, ValidationError } from "@/lib/errors";
-import type { ApiResponse } from "@/types/api";
-import type { CommitData } from "@/types/github";
+import { NextResponse } from 'next/server';
+import { getCommits } from '@/lib/github/services/commitService';
+import { AppError, ValidationError } from '@/lib/errors';
+import type { ApiResponse } from '@/types/api';
+import type { CommitData } from '@/types/github';
 
 // 日本標準時(JST)とUTCの時差（ミリ秒）
 const JST_OFFSET = 9 * 60 * 60 * 1000;
@@ -31,9 +31,9 @@ function handleError(error: unknown): NextResponse<ApiResponse<null>> {
       { status: error.statusCode }
     );
   }
-  console.error("Unexpected error in /api/get-commits:", error);
+  console.error('Unexpected error in /api/get-commits:', error);
   return NextResponse.json(
-    { data: null, error: "予期せぬエラーが発生しました。", status: 500 },
+    { data: null, error: '予期せぬエラーが発生しました。', status: 500 },
     { status: 500 }
   );
 }
@@ -48,26 +48,17 @@ export async function POST(
   request: Request
 ): Promise<NextResponse<ApiResponse<CommitData[] | null>>> {
   try {
-    const { owner, repo, branch, startDate, endDate }: RequestBody =
-      await request.json();
+    const { owner, repo, branch, startDate, endDate }: RequestBody = await request.json();
 
     if (!owner || !repo) {
-      throw new ValidationError(
-        "リクエストボディには`owner`と`repo`が必要です。",
-        "owner/repo"
-      );
+      throw new ValidationError('リクエストボディには`owner`と`repo`が必要です。', 'owner/repo');
     }
     if (!startDate || !endDate) {
-      throw new ValidationError(
-        "リクエストボディには`startDate`と`endDate`が必要です。",
-        "date"
-      );
+      throw new ValidationError('リクエストボディには`startDate`と`endDate`が必要です。', 'date');
     }
 
     // JSTはUTC+9時間。GitHub APIはUTCで日付を扱うため、JSTでの丸一日をカバーするように時差を調整する。
-    const since = new Date(
-      new Date(startDate).getTime() - JST_OFFSET
-    ).toISOString();
+    const since = new Date(new Date(startDate).getTime() - JST_OFFSET).toISOString();
     const until = new Date(
       new Date(endDate).getTime() + 24 * 60 * 60 * 1000 - JST_OFFSET
     ).toISOString();

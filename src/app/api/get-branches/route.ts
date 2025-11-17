@@ -1,8 +1,8 @@
 // src/app/api/get-branches/route.ts
-import { NextResponse } from "next/server";
-import { fetchFromGitHub } from "@/lib/github";
-import { AppError, GitHubAPIError, ValidationError } from "@/lib/errors";
-import type { ApiResponse } from "@/types/api";
+import { NextResponse } from 'next/server';
+import { fetchFromGitHub } from '@/lib/github';
+import { AppError, GitHubAPIError, ValidationError } from '@/lib/errors';
+import type { ApiResponse } from '@/types/api';
 
 /**
  * APIリクエストボディの型定義。
@@ -61,14 +61,14 @@ function handleError(error: unknown): NextResponse<ApiResponse<null>> {
     return NextResponse.json(
       {
         error:
-          "リポジトリが見つかりません。プライベートリポジトリであるか、名前が間違っている可能性があります。",
+          'リポジトリが見つかりません。プライベートリポジトリであるか、名前が間違っている可能性があります。',
         status: 404,
       },
       { status: 404 }
     );
   }
   return NextResponse.json(
-    { error: "予期せぬエラーが発生しました。", status: 500 },
+    { error: '予期せぬエラーが発生しました。', status: 500 },
     { status: 500 }
   );
 }
@@ -87,10 +87,7 @@ export async function POST(
 
     // リクエストボディの検証
     if (!owner || !repo) {
-      throw new ValidationError(
-        "リクエストボディには`owner`と`repo`が必要です。",
-        "owner/repo"
-      );
+      throw new ValidationError('リクエストボディには`owner`と`repo`が必要です。', 'owner/repo');
     }
 
     const branchNames = await fetchBranches(owner, repo);

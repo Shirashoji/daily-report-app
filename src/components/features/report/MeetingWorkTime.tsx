@@ -1,16 +1,12 @@
 // src/components/features/report/MeetingWorkTime.tsx
-"use client";
+'use client';
 
-import { useWorkTime } from "@/hooks/useWorkTime";
-import { useDateContext } from "@/contexts/DateContext";
-import { type WorkTime } from "@/contexts/WorkTimeContext";
-import {
-  formatDate,
-  formatWorkTime,
-  calculateWorkDuration,
-} from "@/lib/utils";
-import { Button } from "@/components/ui/Button";
-import type { ReactElement } from "react";
+import { useWorkTime } from '@/hooks/useWorkTime';
+import { useDateContext } from '@/contexts/DateContext';
+import { type WorkTime } from '@/contexts/WorkTimeContext';
+import { formatDate, formatWorkTime, calculateWorkDuration } from '@/lib/utils';
+import { Button } from '@/components/ui/Button';
+import type { ReactElement } from 'react';
 
 type WorkTimeWithOriginalIndex = WorkTime & { originalIndex: number };
 
@@ -69,8 +65,7 @@ export default function MeetingWorkTime(): ReactElement {
           記録された作業（{formatDate(startDate)} ~ {formatDate(endDate)}）
         </h3>
         <span className="text-lg font-medium">
-          期間合計: {Math.floor(totalDuration / 60)}時間 {totalDuration % 60}
-          分
+          期間合計: {Math.floor(totalDuration / 60)}時間 {totalDuration % 60}分
         </span>
       </div>
       <div className="space-y-4">
@@ -82,16 +77,12 @@ export default function MeetingWorkTime(): ReactElement {
               <div className="flex justify-between items-center mb-3">
                 <h4 className="text-lg font-semibold">{date}</h4>
                 <span className="font-medium text-gray-700">
-                  日次合計: {Math.floor(dailyTotal / 60)}時間{" "}
-                  {dailyTotal % 60}分
+                  日次合計: {Math.floor(dailyTotal / 60)}時間 {dailyTotal % 60}分
                 </span>
               </div>
               <ul className="space-y-2">
                 {times.map((wt) => (
-                  <li
-                    key={wt.originalIndex}
-                    className="p-3 bg-gray-50 rounded-md"
-                  >
+                  <li key={wt.originalIndex} className="p-3 bg-gray-50 rounded-md">
                     <div className="flex items-center justify-between mb-2">
                       {editingWorkTimeIndex === wt.originalIndex ? (
                         // 編集モードのUI
@@ -105,7 +96,7 @@ export default function MeetingWorkTime(): ReactElement {
                           <span className="mx-2">〜</span>
                           <input
                             type="time"
-                            defaultValue={wt.end ? formatWorkTime(wt.end) : ""}
+                            defaultValue={wt.end ? formatWorkTime(wt.end) : ''}
                             id={`end-time-${wt.originalIndex}`}
                             className="border-gray-300 rounded-md"
                           />
@@ -130,11 +121,7 @@ export default function MeetingWorkTime(): ReactElement {
                             >
                               保存
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={handleCancelEdit}
-                            >
+                            <Button size="sm" variant="secondary" onClick={handleCancelEdit}>
                               キャンセル
                             </Button>
                           </div>
@@ -143,30 +130,22 @@ export default function MeetingWorkTime(): ReactElement {
                         // 通常表示モードのUI
                         <>
                           <span className="text-sm">
-                            {formatWorkTime(wt.start)} 〜{" "}
-                            {wt.end ? formatWorkTime(wt.end) : "作業中..."}
-                            {wt.end &&
-                              ` (${calculateWorkDuration(
-                                wt.start,
-                                wt.end
-                              )}分)`}
+                            {formatWorkTime(wt.start)} 〜{' '}
+                            {wt.end ? formatWorkTime(wt.end) : '作業中...'}
+                            {wt.end && ` (${calculateWorkDuration(wt.start, wt.end)}分)`}
                           </span>
                           <div className="flex space-x-2">
                             <Button
                               size="sm"
                               variant="secondary"
-                              onClick={() =>
-                                handleEditWorkTime(wt.originalIndex)
-                              }
+                              onClick={() => handleEditWorkTime(wt.originalIndex)}
                             >
                               編集
                             </Button>
                             <Button
                               size="sm"
                               variant="danger"
-                              onClick={() =>
-                                handleDeleteWorkTime(wt.originalIndex)
-                              }
+                              onClick={() => handleDeleteWorkTime(wt.originalIndex)}
                             >
                               削除
                             </Button>

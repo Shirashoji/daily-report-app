@@ -1,5 +1,5 @@
 // src/app/page.tsx
-import { redirect } from "next/navigation";
+import { redirect } from 'next/navigation';
 
 /**
  * アプリケーションのホームページ。
@@ -7,5 +7,5 @@ import { redirect } from "next/navigation";
  * @returns {void} このコンポーネントはUIをレンダリングせず、リダイレクトのみを行います。
  */
 export default function Home(): void {
-  redirect("/daily");
+  redirect('/daily');
 }

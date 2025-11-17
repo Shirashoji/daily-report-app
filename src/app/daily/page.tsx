@@ -1,7 +1,7 @@
 // src/app/daily/page.tsx
-import ReportPage from "@/components/features/report/ReportPage";
-import { DateProvider } from "@/contexts/DateContext";
-import type { ReactElement } from "react";
+import ReportPage from '@/components/features/report/ReportPage';
+import { DateProvider } from '@/contexts/DateContext';
+import type { ReactElement } from 'react';
 
 /**
  * 日報作成ページのコンポーネント。

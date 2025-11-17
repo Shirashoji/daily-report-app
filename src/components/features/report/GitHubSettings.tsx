@@ -1,8 +1,8 @@
 // src/components/features/report/GitHubSettings.tsx
-"use client";
+'use client';
 
-import { useGitHubContext } from "@/contexts/GitHubContext";
-import type { ReactElement } from "react";
+import { useGitHubContext } from '@/contexts/GitHubContext';
+import type { ReactElement } from 'react';
 
 /**
  * コミット履歴を取得するためのGitHubリポジトリ設定（オーナー、リポジトリ名、ブランチ）を行うコンポーネント。
@@ -27,10 +27,7 @@ export default function GitHubSettings(): ReactElement {
     <div className="space-y-4 mb-4 p-4 border rounded-md">
       <h3 className="text-lg font-medium">コミット取得設定</h3>
       <div>
-        <label
-          htmlFor="github-owner"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="github-owner" className="block text-sm font-medium text-gray-700">
           GitHub Owner:
         </label>
         <input
@@ -43,10 +40,7 @@ export default function GitHubSettings(): ReactElement {
         />
       </div>
       <div>
-        <label
-          htmlFor="github-repo"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="github-repo" className="block text-sm font-medium text-gray-700">
           GitHub Repo:
         </label>
         <input
@@ -60,10 +54,7 @@ export default function GitHubSettings(): ReactElement {
       </div>
 
       <div>
-        <label
-          htmlFor="branch-select"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="branch-select" className="block text-sm font-medium text-gray-700">
           Branch:
         </label>
         <select
@@ -81,14 +72,9 @@ export default function GitHubSettings(): ReactElement {
           ))}
         </select>
         {/* ブランチリストの読み込み中またはエラー時にメッセージを表示 */}
-        {branchesLoading && (
-          <p className="text-sm mt-1">ブランチを読み込み中...</p>
-        )}
-        {branchesError && (
-          <p className="text-red-500 text-sm mt-1">{branchesError}</p>
-        )}
+        {branchesLoading && <p className="text-sm mt-1">ブランチを読み込み中...</p>}
+        {branchesError && <p className="text-red-500 text-sm mt-1">{branchesError}</p>}
       </div>
     </div>
   );
 }
-

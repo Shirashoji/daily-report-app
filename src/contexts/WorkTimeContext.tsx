@@ -1,14 +1,7 @@
 // src/contexts/WorkTimeContext.tsx
-"use client";
+'use client';
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-  useCallback,
-} from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 
 /**
  * 作業時間の情報を格納するインターフェース。
@@ -55,11 +48,7 @@ export interface WorkTimeContextType {
   /** 指定したインデックスの作業記録を編集モードにする関数。 */
   handleEditWorkTime: (index: number) => void;
   /** 編集した作業記録を保存する関数。 */
-  handleSaveWorkTime: (
-    index: number,
-    newStart: string,
-    newEnd: string
-  ) => void;
+  handleSaveWorkTime: (index: number, newStart: string, newEnd: string) => void;
   /** 編集をキャンセルする関数。 */
   handleCancelEdit: () => void;
   /** 指定したインデックスの作業記録を削除する関数。 */
@@ -75,9 +64,7 @@ export interface WorkTimeContextType {
 /**
  * 作業時間に関する状態とロジックを共有するためのReactコンテキスト。
  */
-const WorkTimeContext = createContext<WorkTimeContextType | undefined>(
-  undefined
-);
+const WorkTimeContext = createContext<WorkTimeContextType | undefined>(undefined);
 
 /**
  * 作業時間の追跡機能（状態管理と操作関数）を子コンポーネントに提供するプロバイダー。
@@ -85,56 +72,42 @@ const WorkTimeContext = createContext<WorkTimeContextType | undefined>(
  * @param {object} props - コンポーネントのプロパティ。
  * @param {React.ReactNode} props.children - このプロバイダー内でレンダリングされる子コンポーネント。
  */
-export function WorkTimeProvider({
-  children,
-}: {
-  children: ReactNode;
-}): React.ReactElement {
+export function WorkTimeProvider({ children }: { children: ReactNode }): React.ReactElement {
   // 作業時間のリストを管理するstate
   const [workTimes, setWorkTimes] = useState<WorkTime[]>([]);
   // 現在作業中かどうかの状態を管理するstate
   const [isWorking, setIsWorking] = useState(false);
   // 現在の作業メモを管理するstate
-  const [currentMemo, setCurrentMemo] = useState("");
+  const [currentMemo, setCurrentMemo] = useState('');
   // 編集中の作業記録のインデックスを管理するstate
-  const [editingWorkTimeIndex, setEditingWorkTimeIndex] = useState<
-    number | null
-  >(null);
+  const [editingWorkTimeIndex, setEditingWorkTimeIndex] = useState<number | null>(null);
 
   // マウント時にlocalStorageから作業記録を読み込む
   useEffect(() => {
     try {
-      const savedWorkTimesJson = localStorage.getItem("workTimes");
+      const savedWorkTimesJson = localStorage.getItem('workTimes');
       if (savedWorkTimesJson) {
-        const parsed = JSON.parse(savedWorkTimesJson).map(
-          (wt: RawWorkTime) => ({
-            start: new Date(wt.start),
-            end: wt.end ? new Date(wt.end) : null,
-            memo: wt.memo || "",
-          })
-        );
+        const parsed = JSON.parse(savedWorkTimesJson).map((wt: RawWorkTime) => ({
+          start: new Date(wt.start),
+          end: wt.end ? new Date(wt.end) : null,
+          memo: wt.memo || '',
+        }));
         setWorkTimes(parsed);
         const lastWorkTime = parsed[parsed.length - 1];
         // 最後の作業記録が終了していなければ、作業中状態にする
         setIsWorking(lastWorkTime && lastWorkTime.end === null);
       }
     } catch (error) {
-      console.error(
-        "localStorageからの作業記録の解析中にエラーが発生しました:",
-        error
-      );
+      console.error('localStorageからの作業記録の解析中にエラーが発生しました:', error);
     }
   }, []);
 
   // workTimesが変更されたら、localStorageに保存する
   useEffect(() => {
     try {
-      localStorage.setItem("workTimes", JSON.stringify(workTimes));
+      localStorage.setItem('workTimes', JSON.stringify(workTimes));
     } catch (error) {
-      console.error(
-        "localStorageへの作業記録の保存中にエラーが発生しました:",
-        error
-      );
+      console.error('localStorageへの作業記録の保存中にエラーが発生しました:', error);
     }
   }, [workTimes]);
 
@@ -142,10 +115,7 @@ export function WorkTimeProvider({
    * 新しい作業記録を開始する。
    */
   const handleStartWork = useCallback(() => {
-    setWorkTimes((prev) => [
-      ...prev,
-      { start: new Date(), end: null, memo: "" },
-    ]);
+    setWorkTimes((prev) => [...prev, { start: new Date(), end: null, memo: '' }]);
     setIsWorking(true);
   }, []);
 
@@ -168,7 +138,7 @@ export function WorkTimeProvider({
       return prev;
     });
     setIsWorking(false);
-    setCurrentMemo("");
+    setCurrentMemo('');
   }, [currentMemo]);
 
   /**
@@ -188,10 +158,7 @@ export function WorkTimeProvider({
    * @returns 総作業時間（分）
    */
   const calculateTotalWorkDuration = (times: WorkTime[]): number => {
-    return times.reduce(
-      (total, wt) => total + calculateWorkDuration(wt.start, wt.end),
-      0
-    );
+    return times.reduce((total, wt) => total + calculateWorkDuration(wt.start, wt.end), 0);
   };
 
   /**
@@ -208,23 +175,19 @@ export function WorkTimeProvider({
    * @param newStart - 新しい開始時刻（"HH:MM"形式）。
    * @param newEnd - 新しい終了時刻（"HH:MM"形式）。
    */
-  const handleSaveWorkTime = (
-    index: number,
-    newStart: string,
-    newEnd: string
-  ): void => {
+  const handleSaveWorkTime = (index: number, newStart: string, newEnd: string): void => {
     setWorkTimes((prev) => {
       const newWorkTimes = [...prev];
       const target = newWorkTimes[index];
 
       const startDate = new Date(target.start);
-      const [startHours, startMinutes] = newStart.split(":").map(Number);
+      const [startHours, startMinutes] = newStart.split(':').map(Number);
       startDate.setHours(startHours, startMinutes);
 
       let endDate: Date | null = null;
       if (target.end) {
         endDate = new Date(target.end);
-        const [endHours, endMinutes] = newEnd.split(":").map(Number);
+        const [endHours, endMinutes] = newEnd.split(':').map(Number);
         endDate.setHours(endHours, endMinutes);
         // 終了時刻が開始時刻より前の場合は、日付を1日進める
         if (endDate < startDate) {
@@ -250,7 +213,7 @@ export function WorkTimeProvider({
    * @param index - 削除する作業記録のインデックス。
    */
   const handleDeleteWorkTime = (index: number): void => {
-    if (window.confirm("この作業記録を削除しますか？")) {
+    if (window.confirm('この作業記録を削除しますか？')) {
       setWorkTimes((prev) => prev.filter((_, i) => i !== index));
     }
   };
@@ -264,46 +227,39 @@ export function WorkTimeProvider({
       const rawData: unknown = JSON.parse(jsonString);
 
       if (!Array.isArray(rawData)) {
-        throw new Error("データは配列形式である必要があります。");
+        throw new Error('データは配列形式である必要があります。');
       }
 
       const isValidData = rawData.every((item: unknown) => {
-        if (typeof item !== "object" || item === null) return false;
+        if (typeof item !== 'object' || item === null) return false;
         const wt = item as Partial<RawWorkTime>;
         return (
-          typeof wt.start === "string" &&
-          (typeof wt.end === "string" || wt.end === null) &&
-          typeof wt.memo === "string" &&
+          typeof wt.start === 'string' &&
+          (typeof wt.end === 'string' || wt.end === null) &&
+          typeof wt.memo === 'string' &&
           !isNaN(new Date(wt.start).getTime()) &&
           (wt.end === null || (wt.end && !isNaN(new Date(wt.end).getTime())))
         );
       });
 
       if (!isValidData) {
-        throw new Error("無効なデータ形式です。");
+        throw new Error('無効なデータ形式です。');
       }
 
-      const parsed: WorkTime[] = (rawData as RawWorkTime[]).map(
-        (wt: RawWorkTime) => ({
-          start: new Date(wt.start),
-          end: wt.end ? new Date(wt.end) : null,
-          memo: wt.memo || "",
-        })
-      );
+      const parsed: WorkTime[] = (rawData as RawWorkTime[]).map((wt: RawWorkTime) => ({
+        start: new Date(wt.start),
+        end: wt.end ? new Date(wt.end) : null,
+        memo: wt.memo || '',
+      }));
 
       setWorkTimes(parsed);
       const lastWorkTime = parsed[parsed.length - 1];
       setIsWorking(lastWorkTime && lastWorkTime.end === null);
-      alert("作業時間データをインポートしました。");
+      alert('作業時間データをインポートしました。');
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "不明なエラーが発生しました。";
-      console.error("作業時間のインポート中にエラーが発生しました:", error);
-      alert(
-        `作業時間データのインポートに失敗しました。${message}`
-      );
+      const message = error instanceof Error ? error.message : '不明なエラーが発生しました。';
+      console.error('作業時間のインポート中にエラーが発生しました:', error);
+      alert(`作業時間データのインポートに失敗しました。${message}`);
     }
   };
 
@@ -324,11 +280,7 @@ export function WorkTimeProvider({
     setWorkTimes,
   };
 
-  return (
-    <WorkTimeContext.Provider value={value}>
-      {children}
-    </WorkTimeContext.Provider>
-  );
+  return <WorkTimeContext.Provider value={value}>{children}</WorkTimeContext.Provider>;
 }
 
 /**
@@ -340,9 +292,7 @@ export function WorkTimeProvider({
 export function useWorkTimeContext(): WorkTimeContextType {
   const context = useContext(WorkTimeContext);
   if (context === undefined) {
-    throw new Error(
-      "useWorkTimeContext must be used within a WorkTimeProvider"
-    );
+    throw new Error('useWorkTimeContext must be used within a WorkTimeProvider');
   }
   return context;
 }

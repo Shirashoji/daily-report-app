@@ -1,8 +1,5 @@
 // src/hooks/useWorkTime.ts
-import {
-  useWorkTimeContext,
-  WorkTimeContextType,
-} from "@/contexts/WorkTimeContext";
+import { useWorkTimeContext, WorkTimeContextType } from '@/contexts/WorkTimeContext';
 
 /**
  * 作業時間コンテキスト (`WorkTimeContext`) にアクセスするためのカスタムフック。

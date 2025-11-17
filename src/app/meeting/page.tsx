@@ -1,7 +1,7 @@
 // src/app/meeting/page.tsx
-import ReportPage from "@/components/features/report/ReportPage";
-import { DateProvider } from "@/contexts/DateContext";
-import type { ReactElement } from "react";
+import ReportPage from '@/components/features/report/ReportPage';
+import { DateProvider } from '@/contexts/DateContext';
+import type { ReactElement } from 'react';
 
 /**
  * MTG資料作成ページのコンポーネント。

@@ -1,10 +1,10 @@
 // src/components/features/report/CommitHistoryView.tsx
-"use client";
+'use client';
 
-import GitHubSettings from "./GitHubSettings";
-import CommitHistoryList from "./CommitHistoryList";
-import type { ReactElement } from "react";
-import type { CommitData } from "@/types/github";
+import GitHubSettings from './GitHubSettings';
+import CommitHistoryList from './CommitHistoryList';
+import type { ReactElement } from 'react';
+import type { CommitData } from '@/types/github';
 
 /**
  * `CommitHistoryView`コンポーネントのプロパティの型定義。
@@ -45,11 +45,8 @@ export default function CommitHistoryView({
         <GitHubSettings />
         {isLoading && <p>コミット履歴を読み込み中...</p>}
         {error && <p className="text-red-500">エラー: {error.message}</p>}
-        {!isLoading && !error && (
-          <CommitHistoryList commits={commits} />
-        )}
+        {!isLoading && !error && <CommitHistoryList commits={commits} />}
       </div>
     </div>
   );
 }
-

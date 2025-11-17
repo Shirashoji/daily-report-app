@@ -1,5 +1,5 @@
 // src/contexts/GitHubContext.tsx
-"use client";
+'use client';
 
 import {
   createContext,
@@ -10,9 +10,9 @@ import {
   useCallback,
   Dispatch,
   SetStateAction,
-} from "react";
-import { useSession } from "next-auth/react";
-import type { ApiResponse } from "@/types/api";
+} from 'react';
+import { useSession } from 'next-auth/react';
+import type { ApiResponse } from '@/types/api';
 
 interface BranchesResponse {
   branches: string[];
@@ -31,7 +31,7 @@ interface GitHubContextType {
   refetchBranches: () => void;
 }
 
-import type { ReactElement } from "react";
+import type { ReactElement } from 'react';
 
 // ... (imports)
 
@@ -39,34 +39,30 @@ import type { ReactElement } from "react";
 
 const GitHubContext = createContext<GitHubContextType | undefined>(undefined);
 
-export function GitHubProvider({
-  children,
-}: {
-  children: ReactNode;
-}): ReactElement {
+export function GitHubProvider({ children }: { children: ReactNode }): ReactElement {
   const { data: session } = useSession();
-  const [githubOwner, setGithubOwnerState] = useState("");
-  const [githubRepo, setGithubRepoState] = useState("");
+  const [githubOwner, setGithubOwnerState] = useState('');
+  const [githubRepo, setGithubRepoState] = useState('');
   const [branches, setBranches] = useState<string[]>([]);
   const [branchesLoading, setBranchesLoading] = useState(false);
   const [branchesError, setBranchesError] = useState<string | null>(null);
-  const [selectedBranch, setSelectedBranch] = useState("all");
+  const [selectedBranch, setSelectedBranch] = useState('all');
 
   useEffect(() => {
-    const savedOwner = localStorage.getItem("githubOwner") || "";
-    const savedRepo = localStorage.getItem("githubRepo") || "";
+    const savedOwner = localStorage.getItem('githubOwner') || '';
+    const savedRepo = localStorage.getItem('githubRepo') || '';
     setGithubOwnerState(savedOwner);
     setGithubRepoState(savedRepo);
   }, []);
 
   const setGithubOwner = (owner: string): void => {
     setGithubOwnerState(owner);
-    localStorage.setItem("githubOwner", owner);
+    localStorage.setItem('githubOwner', owner);
   };
 
   const setGithubRepo = (repo: string): void => {
     setGithubRepoState(repo);
-    localStorage.setItem("githubRepo", repo);
+    localStorage.setItem('githubRepo', repo);
   };
 
   const fetchBranches = useCallback(async () => {
@@ -74,19 +70,18 @@ export function GitHubProvider({
       setBranchesLoading(true);
       setBranchesError(null);
       try {
-        const response = await fetch("/api/get-branches", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const response = await fetch('/api/get-branches', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ owner: githubOwner, repo: githubRepo }),
         });
         const data: ApiResponse<BranchesResponse> = await response.json();
         if (!response.ok || data.error) {
-          throw new Error(data.error || "ブランチの取得に失敗しました。");
+          throw new Error(data.error || 'ブランチの取得に失敗しました。');
         }
         setBranches(data.data?.branches || []);
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "不明なエラーが発生しました。";
+        const errorMessage = err instanceof Error ? err.message : '不明なエラーが発生しました。';
         setBranchesError(errorMessage);
       } finally {
         setBranchesLoading(false);
@@ -113,15 +108,13 @@ export function GitHubProvider({
     refetchBranches: fetchBranches,
   };
 
-  return (
-    <GitHubContext.Provider value={value}>{children}</GitHubContext.Provider>
-  );
+  return <GitHubContext.Provider value={value}>{children}</GitHubContext.Provider>;
 }
 
 export function useGitHubContext(): GitHubContextType {
   const context = useContext(GitHubContext);
   if (context === undefined) {
-    throw new Error("useGitHubContext must be used within a GitHubProvider");
+    throw new Error('useGitHubContext must be used within a GitHubProvider');
   }
   return context;
 }

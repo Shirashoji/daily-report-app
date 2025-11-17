@@ -1,11 +1,11 @@
-import { Repository } from "./github";
+import { Repository } from './github';
 
 /**
  * レポートの種類を示す型エイリアス。
  * - `daily`: 日報
  * - `meeting`: 議事録
  */
-export type ReportType = "daily" | "meeting";
+export type ReportType = 'daily' | 'meeting';
 
 /**
  * レポート生成に必要な設定情報を格納するインターフェース。

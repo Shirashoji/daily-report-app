@@ -1,9 +1,9 @@
 // src/hooks/useReportGenerator.ts
-import { useState, useCallback } from "react";
-import { useDateContext } from "@/contexts/DateContext";
-import type { ReportType } from "@/types/report";
-import type { ApiResponse } from "@/types/api";
-import type { CommitData } from "@/types/github";
+import { useState, useCallback } from 'react';
+import { useDateContext } from '@/contexts/DateContext';
+import type { ReportType } from '@/types/report';
+import type { ApiResponse } from '@/types/api';
+import type { CommitData } from '@/types/github';
 
 /**
  * 作業時間の情報を格納するインターフェース。
@@ -67,7 +67,7 @@ export function useReportGenerator({
 }: UseReportGeneratorParams): UseReportGeneratorReturn {
   const { startDate, endDate } = useDateContext();
   // 生成されたレポートテキストを保持するstate
-  const [generatedText, setGeneratedText] = useState("");
+  const [generatedText, setGeneratedText] = useState('');
   // レポート生成中の読み込み状態を管理するstate
   const [isLoading, setIsLoading] = useState(false);
   // エラーメッセージを保持するstate
@@ -81,26 +81,23 @@ export function useReportGenerator({
     async (reportType: ReportType): Promise<void> => {
       setIsLoading(true);
       setError(null);
-      setGeneratedText("レポート生成中...");
+      setGeneratedText('レポート生成中...');
 
       // localStorageからカスタム変数を読み込む
       let customVariables: Record<string, string> = {};
       try {
-        const savedCustomVarsJson = localStorage.getItem("customVariables");
+        const savedCustomVarsJson = localStorage.getItem('customVariables');
         if (savedCustomVarsJson) {
           customVariables = JSON.parse(savedCustomVarsJson);
         }
       } catch (e) {
-        console.error(
-          "localStorageからカスタム変数の解析中にエラーが発生しました:",
-          e
-        );
+        console.error('localStorageからカスタム変数の解析中にエラーが発生しました:', e);
       }
 
       try {
-        const response = await fetch("/api/generate-report", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const response = await fetch('/api/generate-report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             commits,
             model,
@@ -119,13 +116,12 @@ export function useReportGenerator({
         const data: ApiResponse<ReportResponse> = await response.json();
 
         if (!response.ok || data.error) {
-          throw new Error(data.error || "レポートの生成に失敗しました。");
+          throw new Error(data.error || 'レポートの生成に失敗しました。');
         }
 
-        setGeneratedText(data.data?.report || "");
+        setGeneratedText(data.data?.report || '');
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "不明なエラーが発生しました。";
+        const message = err instanceof Error ? err.message : '不明なエラーが発生しました。';
         setError(message);
         setGeneratedText(`レポートの生成に失敗しました。: ${message}`);
       } finally {
@@ -142,10 +138,10 @@ export function useReportGenerator({
     if (!generatedText) return;
     try {
       await navigator.clipboard.writeText(generatedText);
-      alert("レポートをクリップボードにコピーしました。");
+      alert('レポートをクリップボードにコピーしました。');
     } catch (err) {
-      console.error("クリップボードへのコピーに失敗しました:", err);
-      alert("クリップボードへのコピーに失敗しました。");
+      console.error('クリップボードへのコピーに失敗しました:', err);
+      alert('クリップボードへのコピーに失敗しました。');
     }
   };
 
@@ -158,4 +154,3 @@ export function useReportGenerator({
     setGeneratedText,
   };
 }
-

@@ -1,12 +1,12 @@
 // src/components/features/report/ReportHeader.tsx
-"use client";
+'use client';
 
-import { useDateContext } from "@/contexts/DateContext";
-import { formatDate } from "@/lib/utils";
-import { useGeminiModels } from "@/hooks/useGeminiModels";
-import type { ReportType } from "@/types/report";
-import type { ReactElement } from "react";
-import { startOfDay, endOfDay } from "date-fns";
+import { useDateContext } from '@/contexts/DateContext';
+import { formatDate } from '@/lib/utils';
+import { useGeminiModels } from '@/hooks/useGeminiModels';
+import type { ReportType } from '@/types/report';
+import type { ReactElement } from 'react';
+import { startOfDay, endOfDay } from 'date-fns';
 
 /**
  * `ReportHeader`コンポーネントのプロパティの型定義。
@@ -38,12 +38,9 @@ export default function ReportHeader({
   return (
     <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
       {/* 日報ページの場合、単一の日付選択を表示 */}
-      {initialReportType === "daily" && (
+      {initialReportType === 'daily' && (
         <div>
-          <label
-            htmlFor="date-select"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="date-select" className="block text-sm font-medium text-gray-700">
             対象日:
           </label>
           <input
@@ -51,7 +48,7 @@ export default function ReportHeader({
             id="date-select"
             value={formatDate(startDate)}
             onChange={(e) => {
-              const selectedDate = new Date(e.target.value + "T00:00:00+09:00");
+              const selectedDate = new Date(e.target.value + 'T00:00:00+09:00');
               setStartDate(startOfDay(selectedDate));
               setEndDate(endOfDay(selectedDate));
             }}
@@ -60,13 +57,10 @@ export default function ReportHeader({
         </div>
       )}
       {/* 議事録ページの場合、期間の開始日と終了日を選択 */}
-      {initialReportType === "meeting" && (
+      {initialReportType === 'meeting' && (
         <>
           <div>
-            <label
-              htmlFor="start-date-select"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="start-date-select" className="block text-sm font-medium text-gray-700">
               開始日:
             </label>
             <input
@@ -74,19 +68,14 @@ export default function ReportHeader({
               id="start-date-select"
               value={formatDate(startDate)}
               onChange={(e) => {
-                const selectedDate = new Date(
-                  e.target.value + "T00:00:00+09:00"
-                );
+                const selectedDate = new Date(e.target.value + 'T00:00:00+09:00');
                 setStartDate(startOfDay(selectedDate));
               }}
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
             />
           </div>
           <div>
-            <label
-              htmlFor="end-date-select"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="end-date-select" className="block text-sm font-medium text-gray-700">
               終了日:
             </label>
             <input
@@ -94,9 +83,7 @@ export default function ReportHeader({
               id="end-date-select"
               value={formatDate(endDate)}
               onChange={(e) => {
-                const selectedDate = new Date(
-                  e.target.value + "T00:00:00+09:00"
-                );
+                const selectedDate = new Date(e.target.value + 'T00:00:00+09:00');
                 setEndDate(endOfDay(selectedDate));
               }}
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
@@ -105,10 +92,7 @@ export default function ReportHeader({
         </>
       )}
       <div>
-        <label
-          htmlFor="model-select"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="model-select" className="block text-sm font-medium text-gray-700">
           Geminiモデルを選択:
         </label>
         <select

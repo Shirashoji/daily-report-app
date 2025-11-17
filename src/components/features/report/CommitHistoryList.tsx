@@ -1,8 +1,8 @@
 // src/components/features/report/CommitHistoryList.tsx
-"use client";
+'use client';
 
-import type { ReactElement } from "react";
-import type { CommitData } from "@/types/github";
+import type { ReactElement } from 'react';
+import type { CommitData } from '@/types/github';
 
 /**
  * `CommitHistoryList`コンポーネントのプロパティの型定義。
@@ -19,9 +19,7 @@ interface CommitHistoryListProps {
  * @param {CommitHistoryListProps} props - コンポーネントのプロパティ。
  * @returns {ReactElement} コミット履歴のリスト。
  */
-export default function CommitHistoryList({
-  commits,
-}: CommitHistoryListProps): ReactElement {
+export default function CommitHistoryList({ commits }: CommitHistoryListProps): ReactElement {
   if (commits.length === 0) {
     return (
       <div className="bg-gray-100 p-4 rounded-md h-80 flex items-center justify-center">
@@ -36,12 +34,10 @@ export default function CommitHistoryList({
         {commits.map((commit) => (
           <li key={commit.sha} className="mb-2 p-2 border-b border-gray-200">
             <p className="font-mono text-gray-800">
-              <span className="font-bold">{commit.sha}</span> -{" "}
+              <span className="font-bold">{commit.sha}</span> -{' '}
               <span className="italic">{commit.author}</span>
             </p>
-            <p className="text-gray-600">
-              {new Date(commit.date).toLocaleString("ja-JP")}
-            </p>
+            <p className="text-gray-600">{new Date(commit.date).toLocaleString('ja-JP')}</p>
             <p className="whitespace-pre-wrap">{commit.message}</p>
           </li>
         ))}
@@ -49,4 +45,3 @@ export default function CommitHistoryList({
     </div>
   );
 }
-
