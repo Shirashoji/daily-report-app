@@ -37,12 +37,12 @@ interface GeminiApiModel {
 function handleError(error: unknown): NextResponse<ApiResponse<null>> {
   if (error instanceof AppError) {
     return NextResponse.json(
-      { error: error.message, status: error.statusCode },
+      { data: null, error: error.message, status: error.statusCode },
       { status: error.statusCode }
     );
   }
   return NextResponse.json(
-    { error: '予期せぬエラーが発生しました。', status: 500 },
+    { data: null, error: '予期せぬエラーが発生しました。', status: 500 },
     { status: 500 }
   );
 }

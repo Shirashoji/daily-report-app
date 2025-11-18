@@ -52,7 +52,7 @@ async function fetchBranches(owner: string, repo: string): Promise<string[]> {
 function handleError(error: unknown): NextResponse<ApiResponse<null>> {
   if (error instanceof AppError) {
     return NextResponse.json(
-      { error: error.message, status: error.statusCode },
+      { data: null, error: error.message, status: error.statusCode },
       { status: error.statusCode }
     );
   }
@@ -60,6 +60,7 @@ function handleError(error: unknown): NextResponse<ApiResponse<null>> {
   if (error instanceof GitHubAPIError && error.statusCode === 404) {
     return NextResponse.json(
       {
+        data: null,
         error:
           'リポジトリが見つかりません。プライベートリポジトリであるか、名前が間違っている可能性があります。',
         status: 404,
@@ -68,7 +69,7 @@ function handleError(error: unknown): NextResponse<ApiResponse<null>> {
     );
   }
   return NextResponse.json(
-    { error: '予期せぬエラーが発生しました。', status: 500 },
+    { data: null, error: '予期せぬエラーが発生しました。', status: 500 },
     { status: 500 }
   );
 }

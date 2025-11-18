@@ -1,6 +1,5 @@
 // src/components/features/report/CommitHistoryList.tsx
-'use client';
-
+import { memo } from 'react';
 import type { ReactElement } from 'react';
 import type { CommitData } from '@/types/github';
 
@@ -19,7 +18,9 @@ interface CommitHistoryListProps {
  * @param {CommitHistoryListProps} props - コンポーネントのプロパティ。
  * @returns {ReactElement} コミット履歴のリスト。
  */
-export default function CommitHistoryList({ commits }: CommitHistoryListProps): ReactElement {
+const CommitHistoryList = memo(function CommitHistoryList({
+  commits,
+}: CommitHistoryListProps): ReactElement {
   if (commits.length === 0) {
     return (
       <div className="bg-gray-100 p-4 rounded-md h-80 flex items-center justify-center">
@@ -37,11 +38,15 @@ export default function CommitHistoryList({ commits }: CommitHistoryListProps): 
               <span className="font-bold">{commit.sha}</span> -{' '}
               <span className="italic">{commit.author}</span>
             </p>
-            <p className="text-gray-600">{new Date(commit.date).toLocaleString('ja-JP')}</p>
+            <p className="text-gray-600">
+              {new Date(commit.date).toLocaleString('ja-JP')}
+            </p>
             <p className="whitespace-pre-wrap">{commit.message}</p>
           </li>
         ))}
       </ul>
     </div>
   );
-}
+});
+
+export default CommitHistoryList;

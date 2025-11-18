@@ -22,7 +22,7 @@ interface DateContextType {
   setEndDate: Dispatch<SetStateAction<Date>>;
 }
 
-const DateContext = createContext<DateContextType | undefined>(undefined);
+export const DateContext = createContext<DateContextType | undefined>(undefined);
 
 interface DateProviderProps {
   children: ReactNode;

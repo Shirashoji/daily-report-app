@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/Button';
+import { Navigation } from './Navigation';
 import type { ReactElement } from 'react';
 
 const GITHUB_APP_NAME = process.env.NEXT_PUBLIC_GITHUB_APP_NAME;
@@ -22,19 +23,8 @@ export default function Header(): ReactElement {
         <h1 className="text-xl font-bold">
           <Link href="/daily">レポート作成ツール</Link>
         </h1>
-        <nav className="flex items-center space-x-4">
-          <Link href="/daily" className="hover:underline">
-            日報
-          </Link>
-          <Link href="/meeting" className="hover:underline">
-            MTG
-          </Link>
-          <Link href="/stats" className="hover:underline">
-            統計
-          </Link>
-          <Link href="/settings" className="hover:underline">
-            設定
-          </Link>
+        <div className="flex items-center space-x-4">
+          <Navigation />
           {session ? (
             // ユーザーがサインインしている場合の表示
             <>
@@ -61,7 +51,7 @@ export default function Header(): ReactElement {
               )}
             </div>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );

@@ -1,9 +1,6 @@
 // src/components/features/report/CommitHistoryView.tsx
-'use client';
-
-import GitHubSettings from './GitHubSettings';
 import CommitHistoryList from './CommitHistoryList';
-import type { ReactElement } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import type { CommitData } from '@/types/github';
 
 /**
@@ -16,6 +13,8 @@ interface CommitHistoryViewProps {
   isLoading: boolean;
   /** 発生したエラーオブジェクト。 */
   error: Error | null;
+  /** 子コンポーネント */
+  children: ReactNode;
 }
 
 /**
@@ -29,6 +28,7 @@ export default function CommitHistoryView({
   commits,
   isLoading,
   error,
+  children,
 }: CommitHistoryViewProps): ReactElement {
   return (
     <div>
@@ -42,7 +42,7 @@ export default function CommitHistoryView({
         </nav>
       </div>
       <div className="mt-4">
-        <GitHubSettings />
+        {children}
         {isLoading && <p>コミット履歴を読み込み中...</p>}
         {error && <p className="text-red-500">エラー: {error.message}</p>}
         {!isLoading && !error && <CommitHistoryList commits={commits} />}

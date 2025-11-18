@@ -10,6 +10,7 @@ import { useCommitHistory } from '@/hooks/useCommitHistory';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import ReportHeader from './ReportHeader';
 import WorkTimeRecorder from './WorkTimeRecorder';
+import GitHubSettings from './GitHubSettings';
 
 // 各コンポーネントを動的にインポートして、初期表示のパフォーマンスを向上させる
 const CommitHistoryView = dynamic(() => import('./CommitHistoryView'), {
@@ -83,7 +84,9 @@ export default function ReportPage({ reportType }: ReportPageProps): ReactElemen
       <div className="grid grid-cols-2 gap-8">
         {/* コミット履歴表示エリア */}
         <ErrorBoundary>
-          <CommitHistoryView commits={commits} isLoading={isLoadingCommits} error={commitError} />
+          <CommitHistoryView commits={commits} isLoading={isLoadingCommits} error={commitError}>
+            <GitHubSettings />
+          </CommitHistoryView>
         </ErrorBoundary>
         {/* レポート生成・表示エリア */}
         <ErrorBoundary>

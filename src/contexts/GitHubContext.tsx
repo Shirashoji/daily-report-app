@@ -37,7 +37,9 @@ import type { ReactElement } from 'react';
 
 // ... (interface)
 
-const GitHubContext = createContext<GitHubContextType | undefined>(undefined);
+export const GitHubContext = createContext<GitHubContextType | undefined>(
+  undefined
+);
 
 export function GitHubProvider({ children }: { children: ReactNode }): ReactElement {
   const { data: session } = useSession();

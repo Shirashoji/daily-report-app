@@ -8,6 +8,15 @@ import { Repository } from './github';
 export type ReportType = 'daily' | 'meeting';
 
 /**
+ * 作業時間の情報を格納するインターフェース。
+ */
+export interface WorkTime {
+  start: string;
+  end: string | null;
+  memo: string;
+}
+
+/**
  * レポート生成に必要な設定情報を格納するインターフェース。
  */
 export interface ReportConfig {

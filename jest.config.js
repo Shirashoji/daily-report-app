@@ -14,6 +14,8 @@ const customJestConfig = {
   // if using TypeScript with a baseUrl set to the root directory then you need the below for alias' to work
   moduleDirectories: ['node_modules', '<rootDir>/'],
   testEnvironment: 'jest-environment-jsdom',
+  testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$',
+  transformIgnorePatterns: ['/node_modules/(?!next-auth|@babel|@jest)/'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
@@ -22,7 +24,6 @@ const customJestConfig = {
     '!src/**/*.d.ts',
     '!src/**/index.ts',
     '!src/app/layout.tsx',
-    '!src/app/api/**/route.ts',
     '!src/auth.ts',
     '!src/lib/errors.ts',
     '!src/types/**/*.ts',

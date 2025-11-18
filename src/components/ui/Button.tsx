@@ -1,5 +1,5 @@
 // src/components/ui/Button.tsx
-import { ButtonHTMLAttributes, ReactNode, ReactElement } from 'react';
+import { ButtonHTMLAttributes, ReactNode, ReactElement, memo } from 'react';
 import clsx from 'clsx';
 
 /**
@@ -34,7 +34,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * @param {ButtonProps} props - ボタンのプロパティ。
  * @returns {ReactElement} レンダリングされたbutton要素。
  */
-export function Button({
+export const Button = memo(function Button({
   variant = 'primary',
   size = 'md',
   children,
@@ -64,4 +64,4 @@ export function Button({
       {isLoading ? 'Loading...' : children}
     </button>
   );
-}
+});
