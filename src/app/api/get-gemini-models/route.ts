@@ -1,7 +1,7 @@
-// src/app/api/get-gemini-models/route.ts
 import { NextResponse } from 'next/server';
 import { AppError } from '@/lib/errors';
 import type { ApiResponse } from '@/types/api';
+import { getGeminiModels } from '@/services/gemini';
 
 /**
  * クライアントに返すGeminiモデル情報の型定義。
@@ -22,14 +22,6 @@ interface ModelsResponse {
 }
 
 /**
- * Google AI APIから返されるモデル情報の型定義（必要な部分のみ）。
- */
-interface GeminiApiModel {
-  name: string;
-  displayName: string;
-}
-
-/**
  * エラーをハンドリングし、適切なNextResponseを返します。
  * @param error - 発生したエラー。
  * @returns エラー情報を含むNextResponse。
@@ -41,6 +33,7 @@ function handleError(error: unknown): NextResponse<ApiResponse<null>> {
       { status: error.statusCode }
     );
   }
+  console.error('Unexpected error:', error);
   return NextResponse.json(
     { data: null, error: '予期せぬエラーが発生しました。', status: 500 },
     { status: 500 }
@@ -54,26 +47,10 @@ function handleError(error: unknown): NextResponse<ApiResponse<null>> {
  */
 export async function GET(): Promise<NextResponse<ApiResponse<ModelsResponse | null>>> {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new AppError('Gemini APIキーが設定されていません。', 'CONFIG_ERROR', 500);
-    }
+    const geminiModels = await getGeminiModels();
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new AppError(
-        errorData.error?.message || `モデルの取得に失敗しました: ${response.status}`,
-        'API_ERROR',
-        response.status
-      );
-    }
-
-    const data = await response.json();
     // APIからのレスポンスをクライアントが必要とする形式に整形
-    const models = data.models.map((model: GeminiApiModel) => ({
+    const models = geminiModels.map((model) => ({
       name: model.name,
       displayName: model.displayName,
     }));

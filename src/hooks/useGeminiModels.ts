@@ -6,7 +6,7 @@ import type { ApiResponse } from '@/types/api';
  * Geminiモデルの情報を格納するインターフェース。
  */
 interface GeminiModel {
-  /** モデルの内部名（例: "models/gemini-1.5-flash"）。 */
+  /** モデルの内部名（例: "models/gemini-2.5-flash"）。 */
   name: string;
   /** モデルの表示名。 */
   displayName: string;

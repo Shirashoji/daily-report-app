@@ -1,0 +1,285 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Daily Report App API",
+    "version": "1.0.0",
+    "description": "API for the Daily Report App"
+  },
+  "paths": {
+    "/api/get-gemini-models": {
+      "get": {
+        "summary": "Get available Gemini models",
+        "responses": {
+          "200": {
+            "description": "A list of Gemini models",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetGeminiModelsResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/get-branches": {
+      "post": {
+        "summary": "Get branches of a GitHub repository",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetBranchesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A list of branches",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBranchesResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/get-commits": {
+      "post": {
+        "summary": "Get commits of a GitHub repository for a specific date range",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetCommitsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A list of commits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCommitsResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/generate-report": {
+      "post": {
+        "summary": "Generate a report using Gemini",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateReportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The generated report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateReportResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "data": { "type": "null", "nullable": true },
+          "error": { "type": "string" },
+          "status": { "type": "number" }
+        }
+      },
+      "GeminiModel": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "displayName": { "type": "string" }
+        }
+      },
+      "GetGeminiModelsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "models": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GeminiModel"
+                }
+              }
+            }
+          },
+          "status": { "type": "number", "example": 200 }
+        }
+      },
+      "GetBranchesRequest": {
+        "type": "object",
+        "required": ["owner", "repo"],
+        "properties": {
+          "owner": { "type": "string" },
+          "repo": { "type": "string" }
+        }
+      },
+      "GetBranchesResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "branches": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "status": { "type": "number", "example": 200 }
+        }
+      },
+      "CommitData": {
+        "type": "object",
+        "properties": {
+          "sha": { "type": "string" },
+          "message": { "type": "string" },
+          "author": { "type": "string" },
+          "date": { "type": "string", "format": "date-time" }
+        }
+      },
+      "GetCommitsRequest": {
+        "type": "object",
+        "required": ["owner", "repo", "branch", "startDate", "endDate"],
+        "properties": {
+          "owner": { "type": "string" },
+          "repo": { "type": "string" },
+          "branch": { "type": "string" },
+          "startDate": { "type": "string", "format": "date" },
+          "endDate": { "type": "string", "format": "date" }
+        }
+      },
+      "GetCommitsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommitData"
+            }
+          },
+          "status": { "type": "number", "example": 200 }
+        }
+      },
+      "WorkTime": {
+        "type": "object",
+        "properties": {
+          "start": { "type": "string", "format": "date-time" },
+          "end": { "type": "string", "format": "date-time", "nullable": true },
+          "memo": { "type": "string" }
+        }
+      },
+      "GenerateReportRequest": {
+        "type": "object",
+        "required": ["commits", "model", "reportType", "workTimes", "startDate", "endDate"],
+        "properties": {
+          "commits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommitData"
+            }
+          },
+          "model": { "type": "string" },
+          "reportType": { "type": "string", "enum": ["daily", "meeting"] },
+          "workTimes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkTime"
+            }
+          },
+          "startDate": { "type": "string", "format": "date" },
+          "endDate": { "type": "string", "format": "date" },
+          "customVariables": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          }
+        }
+      },
+      "GenerateReportResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "report": { "type": "string" }
+            }
+          },
+          "status": { "type": "number", "example": 200 }
+        }
+      }
+    }
+  }
+}
