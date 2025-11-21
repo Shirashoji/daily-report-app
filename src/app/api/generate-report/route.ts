@@ -149,6 +149,18 @@ function handleError(error: unknown, model?: string): NextResponse<ApiResponse<n
       { status: 404 }
     );
   }
+
+  // レート制限エラーのハンドリング
+  if (error instanceof Error && (error.message.includes('429') || error.message.includes('RESOURCE_EXHAUSTED'))) {
+    return NextResponse.json(
+      {
+        data: null,
+        error: 'Gemini APIの利用制限に達しました。しばらく待ってから再度お試しください。',
+        status: 429,
+      },
+      { status: 429 }
+    );
+  }
   return NextResponse.json(
     {
       data: null,
@@ -190,6 +202,7 @@ export async function POST(
     );
     return NextResponse.json({ data: { report }, status: 200 });
   } catch (error: unknown) {
+    console.error('API Error:', error);
     return handleError(error, model);
   }
 }

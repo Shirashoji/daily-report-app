@@ -8,7 +8,7 @@ const GeminiModelSchema = z.object({
   name: z.string(),
   version: z.string(),
   displayName: z.string(),
-  description: z.string(),
+  description: z.string().optional(),
   inputTokenLimit: z.number(),
   outputTokenLimit: z.number(),
   supportedGenerationMethods: z.array(z.string()),
@@ -39,8 +39,6 @@ export async function getGeminiModels(): Promise<GeminiModel[]> {
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
 
-  let data: any = null;
-
   try {
     const response = await fetch(url);
 
@@ -53,7 +51,7 @@ export async function getGeminiModels(): Promise<GeminiModel[]> {
       );
     }
 
-    data = await response.json();
+    const data = await response.json();
     
     // バリデーション実行
     const parsedData = GeminiModelsResponseSchema.parse(data);
@@ -65,7 +63,7 @@ export async function getGeminiModels(): Promise<GeminiModel[]> {
     }
     if (error instanceof z.ZodError) {
       console.error('Gemini API validation error:', error.errors);
-      throw new AppError(`Gemini APIからのレスポンス形式が不正です。Data: ${JSON.stringify(data)}`, 'API_VALIDATION_ERROR', 502);
+      throw new AppError('Gemini APIからのレスポンス形式が不正です。', 'API_VALIDATION_ERROR', 502);
     }
     throw new AppError('予期せぬエラーが発生しました。', 'UNKNOWN_ERROR', 500);
   }
