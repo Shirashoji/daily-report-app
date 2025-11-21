@@ -54,6 +54,8 @@ describe('Button', () => {
     );
     const button = screen.getByRole('button');
     expect(button).toBeDisabled();
+    expect(button).toHaveClass('bg-gray-300');
+    expect(button).not.toHaveClass('bg-blue-500');
     fireEvent.click(button);
     expect(handleClick).not.toHaveBeenCalled();
   });

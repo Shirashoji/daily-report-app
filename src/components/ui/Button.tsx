@@ -48,13 +48,13 @@ export const Button = memo(function Button({
       className={clsx(
         'font-bold rounded transition-colors',
         {
-          'bg-blue-500 hover:bg-blue-700 text-white': variant === 'primary',
-          'bg-gray-500 hover:bg-gray-700 text-white': variant === 'secondary',
-          'bg-red-500 hover:bg-red-700 text-white': variant === 'danger',
+          'bg-blue-500 hover:bg-blue-700 text-white': variant === 'primary' && !disabled && !isLoading,
+          'bg-gray-500 hover:bg-gray-700 text-white': variant === 'secondary' && !disabled && !isLoading,
+          'bg-red-500 hover:bg-red-700 text-white': variant === 'danger' && !disabled && !isLoading,
           'py-1 px-2 text-sm': size === 'sm',
           'py-2 px-4 text-base': size === 'md',
           'py-3 px-6 text-lg': size === 'lg',
-          'opacity-50 cursor-not-allowed': disabled || isLoading,
+          'bg-gray-300 text-gray-500 cursor-not-allowed': disabled || isLoading,
         },
         className
       )}
