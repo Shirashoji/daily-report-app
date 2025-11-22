@@ -78,8 +78,7 @@ ${template.replace('# 作業予定', `${workTimeText}\n\n# 作業予定`)}
 
 # コミット履歴
 ---\n${commitsText}\n---
-
-# 生成される日報`;
+`;
 }
 
 /**
